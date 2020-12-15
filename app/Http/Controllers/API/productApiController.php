@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Accessory;
 use App\Cart;
 use App\Category;
 use App\CategoryOnline;
