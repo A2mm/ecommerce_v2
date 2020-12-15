@@ -21,11 +21,11 @@ class Store extends Model
         return $this->belongsToMany(Product::class);
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+   /* public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function sellers()
     {

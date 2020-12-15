@@ -13,7 +13,6 @@ class CreateWishsTable extends Migration
      */
     public function up()
     {
-
         Schema::create('wishs', function (Blueprint $table) {
           $table->integer('id', true);
           $table->integer('user_id');

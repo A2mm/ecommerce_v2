@@ -14,7 +14,7 @@ class AddUsePromoToPurchases extends Migration
     public function up()
     {
         Schema::table('purchases', function (Blueprint $table) {
-            $table->integer('use_promo')->default(0);
+            $table->integer('use_promo')->nullable();
         });
     }
 
@@ -26,7 +26,7 @@ class AddUsePromoToPurchases extends Migration
     public function down()
     {
         Schema::table('purchases', function (Blueprint $table) {
-            $table->dropColumn('use_promo');
+            // $table->dropColumn('use_promo');
         });
     }
 }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coupon extends Model
 {
-    use LogsActivity;
+   // use LogsActivity;
     use SoftDeletes;
 
     protected $table = 'coupones';
@@ -17,13 +17,13 @@ class Coupon extends Model
 
     protected $fillable = ['code', 'owner_id', 'owner_name', 'expiry_date', 'type', 'restrict_price', 'product_id', 'discount', 'flat_rate'];
 
-    protected static $logFillable = true;
+   //  protected static $logFillable = true;
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php';
       $activity->ip = $ip;
-    }
+    }*/
 
     public function product()
     {

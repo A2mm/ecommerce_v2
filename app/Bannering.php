@@ -22,11 +22,11 @@ class Bannering extends Model
     // protected static $logFillable = true;
     protected static $logAttributes = ['title', 'bannering_type_id', 'full_image', 'banner_link',];
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function image_path(){
       return 'shop_images/banners/' . $this->image;

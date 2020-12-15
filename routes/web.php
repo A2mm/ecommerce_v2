@@ -1,339 +1,24 @@
 <?php
 
-Route::get('locale/{locale}', function ($locale){
-    Session::put('locale', $locale);
-    return redirect()->back();
-});
-
-Route::get('/clear-cache', function() {
-    Artisan::call('cache:clear');
-    return "Cache is cleared";
-});
-//to get stores for each vendor in create page
-Route::get('/venstores/{id}', [
-    'uses' => 'OwnerProductController@vendorStores',
-]);
-
-Route::get('/police', function () {
-    return view('shop.PrivacyNotice');
-});
-
-Route::get('/wrong', function () {
-    return view('errors.404');
-});
-
-// Route::get('/upu', function () {
-//     // $data = DB::table($table)->get();
-//     $data = App\User::find(209);
-//     $data = json_decode(json_encode($data), true);
-//     Excel::create('SiteData', function ($excel) use ($data) {
-//         $excel->sheet('Sheetname', function ($sheet) use ($data) {
-//             $sheet->fromArray($data);
-//         });
-//     })->download('csv');
-// })->middleware('owner');
-
-// Route::get('/upu', function(){
-
-//    return view('phpinfo');
-
-// });
-
-// Route::get('/upu', function(){
-//   foreach (App\Product::all() as $product) {
-//     // $user = App\User::find($one->user_id);
-
-//     $cart = App\Cart::create([
-//         'product_id'  =>$product->id,
-//         'vendor_id'   => $product->vendor_id,
-//         'store_id'    => $product->store_id,
-//         'quantity'    => 1,
-//         'reason'      => 'start'
-//         ]);
-//   }
-//   return 'DONE';
-// });
-
-// Route::get('/upu', function(){
-//   foreach (App\Purchase::all() as $one) {
-
-//     if( !isset( $one->user )  )  {
-
-//          $one->update([
-//       'purchaser'=> 'user'
-//     ]);
-///
-//     }
-
-//     else{
-
-//     $one->update([
-//       'purchaser'=> $one->user->name
-//     ]);
-
-//     }
-//   }
-//   return 'DONE';
-// });
-
-// Route::get('/upu', function(){
-
-// $nexmo = app('Nexmo\Client');
-// $nexmo->message()->send([
-//     'to'   => '+201003940502',
-//     'from' => '16105552344',
-//     'text' => 'Using the instance to send a message.'
-// ]);
-// });
-
-// Route::get('icrop', 'ImageController@imageCrop');
-// Route::post('icrop', 'ImageController@imageCropPost');
-
-// Route::get('ic', 'ImageController@iCrop');
-// Route::post('ic', 'ImageController@iCropPost');
-
-Route::get('/av', function () {
-    return view('shop.testanddelete');
-});
-
-Route::get('/password/reset', function () {
-    return view('auth.passwords.reset');
-});
-
-Route::get('/k', ['as' => 'k', 'uses' => 'ShopController@kk']);
-Route::post('/k/post', ['as' => 'k.post', 'uses' => 'ShopController@kkk']);
-
-Route::get('/lessthree', function () {
-
-    $products = App\Product::where('quantity', '<', 3)->where('quantity', '>', 0)->get();
-    $contactEmail = 'mohamed.nabil@at-portal.info';
-    $subject = "quantities less than 3 items";
-    //$content = $request['name'];
-    $code = str_random(6);
-    Mail::send('owner_dashboard.quantity.quantityReport', ['code' => $code, 'products' => $products], function ($message) use ($contactEmail, $subject) {
-        $message->from('me@gmail.com', 'Luxgems');
-        $message->to($contactEmail);
-        $message->subject($subject);
-    });
-
-    return 'done';
-
-});
-
 Route::group(['middleware' => 'lang'], function () {
 
-    /*Route::get('/testregister', ['as'=>'test.register', 'uses'=>'TestController@getRegister'])->middleware('guest');
-    Route::post('/testregister', ['as'=>'register.test', 'uses'=>'TestController@send']);*/
-
-    Route::get('/trans/{locale}', function ($locale) {
-        \Session::put('language', $locale);
-        //return session('language');
-        return back();
+    Route::get('/trans/{locale}', function ($locale) 
+    {
+        \Session::put('language', $locale);      
+         return back();
     });
 
-    Route::get('/sms/{to}', function (\Nexmo\Client $nexmo, $to) {
-        //return $to;
-        $message = $nexmo->message()->send([
-            'to' => $to,
-            'from' => 'hhhh',
-            'text' => 'HHHHHHHHHH',
-        ]);
-        Log::info('sent message: ' . $message['message-id']);
-    });
-
-    //Route::get('/new', 'ShopController@newdesign');
-    Route::get('/', 'ShopController@getSetting');
-    Route::get('/search', [
-        'uses' => 'ShopController@search',
-        'as' => 'shop.search',
-    ]);
-
-    //Route::post('/neww', 'ShopController@qqq');
-
-    Route::post('/main', 'resize@save');
-    Route::get('/main', function () {
-        return view('main');
-    });
-    Route::post('upload', function () {
-        $image = Input::file('image');
-        Image::make($image->getRealPath())->resize('280', '200')->save('public/shop_images/' . $filename);
-
-    });
-
-    Route::get('/csv/{table}', function ($table) {
-        $data = DB::table($table)->get();
-        $data = json_decode(json_encode($data), true);
-        Excel::create('SiteData', function ($excel) use ($data) {
-            $excel->sheet('Sheetname', function ($sheet) use ($data) {
-                $sheet->fromArray($data);
-            });
-        })->download('csv');
-    })->middleware('owner');
-
-    Route::get('/tm', function () {
-        return App\User::find(6)->moneyAmount();
-    });
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| This file is where you may define all of the routes that are handled
-| by your application. Just tell Laravel the URIs it should respond
-| to using a Closure or controller method. Build something great!
-|
- */
-// Route::get('/paypal/checkout', 'PaypalController@getCheckout');
-    // Route::get('/paypal/done', 'PaypalController@getDone');
-    // Route::get('/paypal/cancle', 'PaypalController@getCancel');
-
-// Route::get('/cashu', ['as'=>'cashu', 'uses'=>'CashU@pro']);
-
-    Route::get('/buy', ['as' => 'shop.buy', 'uses' => 'ShopController@buy'])->middleware('auth');
-    Route::post('/buy', ['as' => 'buy.user', 'uses' => 'ShopController@postBuy']);
-
-    Route::post('/cashOnDelivery', ['as' => 'shop.cashOnDelivery', 'uses' => 'ShopController@chooseDelivery']);
-
-    Route::get('/paybal/done', ['as' => 'paybal.done', 'uses' => 'ShopController@choosePaypal']);
-
-    Route::get('/test', function () {
-        return Analytics::getActiveUsers();
-    });
-/*
-Route::get('/search', function(){
-return view('shop.search');
-});
- */
-
-    Route::get('facebook', 'ShopController@redirectToProvider');
-    Route::get('facebook/callback', 'ShopController@handleProviderCallback');
-
-    Route::get('/index', ['as' => 'shop.index', 'uses' => 'ShopController@getIndex']);
-//Route::get('/k', ['as'=>'shop.index', 'uses'=>'ShopController@getIndex']);
-    //Route::get('/shop/{slug}', ['as'=>'shop.index.domain', 'uses'=>'ShopController@getIndexDomain']);
-    Route::get('/recom', ['as' => 'recom', 'uses' => 'ShopController@recommended']);
-    Route::get('/auction', ['as' => 'auction', 'uses' => 'ShopController@auction']);
-    Route::get('/digital', ['as' => 'digitals', 'uses' => 'ShopController@Digital']);
-    Route::get('/digital/{id}', ['as' => 'digital', 'uses' => 'ShopController@getOneDigital']);
-
-    Route::get('/checkCarts', 'Cronjob@checkUsersCart');
-
-//Route::post('/download', ['as'=>'digital.download', 'uses'=>'ShopController@downloadDigitalProduct']);
-
-    Route::get('/download', ['as' => 'digital.download', 'uses' => 'ShopController@downloadDigitalProduct']);
-
-    Route::get('/category/{id}', ['as' => 'shop.category.single', 'uses' => 'ShopController@getCategory']);
-    Route::get('/subcategory/{id}', ['as' => 'shop.subcategory.single', 'uses' => 'ShopController@getSubcategory']);
-    Route::get('/product/{id}/{slug}', ['as' => 'shop.product.single', 'uses' => 'ShopController@getProduct']);
-    Route::get('/register', ['as' => 'shop.register', 'uses' => 'ShopController@getRegister'])->middleware('guest');
-    Route::post('/register', ['as' => 'register.user', 'uses' => 'ShopController@postRegister']);
-    Route::get('/login', ['as' => 'shop.login', 'uses' => 'ShopController@getLogin'])->middleware('guest');
-    Route::post('/login', ['as' => 'login.user', 'uses' => 'ShopController@postLogin']);
-    Route::get('/logout/user', ['as' => 'logout.user', 'uses' => 'ShopController@getLogoutUser'])->middleware('auth');
-
-//Forgot Password
-    Route::get('/forgot', ['as' => 'shop.forgot', 'uses' => 'ShopController@getForgot'])->middleware('guest');
-    Route::post('/forgot', ['as' => 'forgot.user', 'uses' => 'ShopController@postForgot']);
-    Route::post('/reset', ['as' => 'resetCode', 'uses' => 'ShopController@checkResetCode']);
-    Route::post('/reset/password', ['as' => 'password.reset', 'uses' => 'ShopController@resetPassword']);
-
-    Route::post('/new/order/user', ['as' => 'new.order.user', 'uses' => 'ShopController@postOrder']);
-    Route::post('/reorder/user', ['as' => 'shop.reOrder', 'uses' => 'ShopController@reOrder']);
-
-    Route::get('/reorder/user', ['as' => 'shop.getreOrder', 'uses' => 'ShopController@getreOrder']);
-
-    Route::get('/cart', ['as' => 'cart.user', 'uses' => 'ShopController@getCart'])->middleware('auth');
-    Route::get('/history', ['as' => 'history.user', 'uses' => 'ShopController@getHistory'])->middleware('auth');
-    Route::get('/remove/history/{id}', ['as' => 'remove.history', 'uses' => 'ShopController@getRemoveHistory']);
-
-    Route::get('/wishlist', ['as' => 'wishlist.user', 'uses' => 'ShopController@getWishlist'])->middleware('auth');
-    Route::post('/wishlist/post', ['as' => 'new.wishlist', 'uses' => 'ShopController@postWish']);
-    Route::get('/remove/wish/{id}', ['as' => 'remove.wish', 'uses' => 'ShopController@getRemoveWish']);
-//Route::post('/remove/wish/{id}', ['as'=>'remove.wish', 'uses'=>'ShopController@getRemoveWish']);
-
-    Route::get('/remove/order/{id}', ['as' => 'remove.order', 'uses' => 'ShopController@getRemoveOrder']);
-
-    Route::get('/verify/{code}', ['as' => 'verify', 'uses' => 'ShopController@verify']);
-    Route::get('/updateVerify/{code}', ['as' => 'updateVerify', 'uses' => 'ShopController@updateVerify']);
-
-    Route::get('/profile', ['as' => 'shop.profile', 'uses' => 'ShopController@getProfile']);
-
-    Route::get('/edit', ['as' => 'edit.user', 'uses' => 'ShopController@getEditProfile'])->middleware('auth');
-    Route::post('/edit', ['as' => 'edit.user', 'uses' => 'ShopController@postEditProfile'])->middleware('auth');
-
-    Route::get('/changePassword', ['as' => 'password.user', 'uses' => 'ShopController@getChangePassword'])->middleware('auth');
-    Route::post('/changePassword', ['as' => 'password.user', 'uses' => 'ShopController@postChangePassword']);
-
-    Route::post('/review/post', ['as' => 'review.post', 'uses' => 'ShopController@postReview'])->middleware('auth');
-    Route::get('/remove/review/{id}', ['as' => 'remove.review', 'uses' => 'ShopController@getRemoveReview']);
-
-    Route::post('/quantity/edit', ['as' => 'quantity.edit', 'uses' => 'ShopController@EditQuantity'])->middleware('auth');
-
-
-});  // refers to lang braces
-
-//CRM ROUTESSSSSS
-/*
-Route::group(['prefix' => 'crm'], function () {
-    Route::get('/', ['as' => 'crm.dashboard', 'uses' => 'CRM\DashboardController@getIndex'])->middleware('crm');
-    Route::get('/login', ['as' => 'crm.login', 'uses' => 'CRM\DashboardController@getLogin']);
-    Route::post('/login', ['as' => 'crm.login.post', 'uses' => 'CRM\DashboardController@postLogin']);
-    Route::get('/logout', ['as' => 'crm.logout', 'uses' => 'CRM\DashboardController@logout']);
-
-    Route::get('/mail', ['as' => 'crm.mail', 'uses' => 'CRM\MailsController@getMail'])->middleware('crm');
-    Route::post('/mail', ['as' => 'crm.mail.send', 'uses' => 'CRM\MailsController@sendMail'])->middleware('crm');
-    Route::get('/notification', ['as' => 'crm.notification', 'uses' => 'CRM\MailsController@getNotification'])->middleware('crm');
-    Route::post('/notification', ['as' => 'crm.notification.send', 'uses' => 'CRM\MailsController@sendNotification'])->middleware('crm');
-
-    Route::get('/tickets', ['as' => 'crm.tickets', 'uses' => 'CRM\TicketController@getMessages'])->middleware('crm');
-    Route::get('/tickets/new', ['as' => 'crm.tickets.new', 'uses' => 'CRM\TicketController@getMessagesNew'])->middleware('crm');
-    Route::get('/tickets/details/{id}', ['as' => 'crm.tickets.details', 'uses' => 'CRM\TicketController@getIndex'])->middleware('crm');
-    Route::post('/tickets', ['as' => 'crm.tickets.new.message', 'uses' => 'CRM\TicketController@postMessage'])->middleware('crm');
-    Route::get('/tickets/close/{id}', ['as' => 'crm.tickets.close', 'uses' => 'CRM\TicketController@getClose'])->middleware('crm');
-
-
-    Route::get('/manage/customers/data', ['as' => 'crm.customers.all.data', 'uses' => 'CRM\CustomerController@getData'])->middleware('crm');
-    Route::get('/manage/customers', ['as' => 'crm.customers.all', 'uses' => 'CRM\CustomerController@getShowAll'])->middleware('crm');
-    Route::get('/manage/customers/create', ['as' => 'crm.customers.create', 'uses' => 'CRM\CustomerController@getCreate'])->middleware('crm');
-    Route::post('/manage/customers/store', ['as' => 'crm.customers.store', 'uses' => 'CRM\CustomerController@postStore'])->middleware('crm');
-    Route::get('/manage/customers/edit/{id}', ['as' => 'crm.customers.edit', 'uses' => 'CRM\CustomerController@getEdit'])->middleware('crm');
-    Route::post('/manage/customers/edit/{id}', ['as' => 'crm.customers.edit.post', 'uses' => 'CRM\CustomerController@postEdit'])->middleware('crm');
-    Route::get('/manage/customers/delete/{id}', ['as' => 'crm.customers.delete', 'uses' => 'CRM\CustomerController@getDelete'])->middleware('crm');
-    Route::get('/manage/customers/details/{id}', ['as' => 'crm.customers.details', 'uses' => 'CRM\CustomerController@getDetails'])->middleware('crm');
-    Route::get('/manage/customers/details/data/{id}', ['as' => 'crm.customers.details.data', 'uses' => 'CRM\CustomerController@getDetailsData'])->middleware('crm');
-});
-*/
 // START OWNER SECTION
 Route::group(['prefix' => 'owner'], function () {
     Route::get('login', ['as' => 'owner.login', 'uses' => 'OwnerController@getLogin']);
     Route::post('login', ['as' => 'owner.login.post', 'uses' => 'OwnerController@postLogin']);
     Route::get('dashboard', ['as' => 'owner.dashboard', 'uses' => 'OwnerController@getDashboard'])->middleware('owner');
     Route::get('graph', ['as' => 'owner.graph', 'uses' => 'OwnerController@getGraph'])->middleware('owner');
-
     Route::get('/market', ['as' => 'owner.manage.all.market', 'uses' => 'OwnerController@getMarket'])->middleware('owner');
-
     Route::get('logout', ['as' => 'owner.logout', 'uses' => 'OwnerController@getLogout']);
 // END OWNER SECTION
-/*
-    //configurations
-    Route::get('/manage/configurations/data', ['as' => 'manage.configuration.all.data', 'uses' => 'OwnerConfigurationController@getData'])->middleware('owner');
-    Route::get('/manage/configurations', ['as' => 'manage.configuration.all', 'uses' => 'OwnerConfigurationController@getShowAll'])->middleware('owner');
-    Route::get('/manage/configurations/edit', ['as' => 'manage.configuration.edit', 'uses' => 'OwnerConfigurationController@getEditConfiguration'])->middleware('owner');
-    Route::post('/manage/configurations/edit', ['as' => 'manage.configuration.edit.post', 'uses' => 'OwnerConfigurationController@postEditConfiguration'])->middleware('owner');
-*/
-/*
-    //competion
-    Route::get('/manage/competions', ['as' => 'manage.competion.all', 'uses' => 'OwnerCompetionController@getShowAll'])->middleware('owner');
-    Route::get('/manage/competions/create', ['as' => 'manage.competion.create', 'uses' => 'OwnerCompetionController@getCreate'])->middleware('owner');
-    Route::post('/manage/competions/store', ['as' => 'manage.competion.store', 'uses' => 'OwnerCompetionController@postStore'])->middleware('owner');
-    Route::get('/manage/competions/edit/{id}', ['as' => 'manage.competion.edit', 'uses' => 'OwnerCompetionController@getEditCompetions'])->middleware('owner');
-    Route::post('/manage/competions/edit/{id}', ['as' => 'manage.competion.edit.post', 'uses' => 'OwnerCompetionController@postEditCompetions'])->middleware('owner');
-    Route::get('/manage/competions/delete/{id}', ['as' => 'manage.competion.delete', 'uses' => 'OwnerCompetionController@getDeleteCompetions'])->middleware('owner');
-    Route::get('/manage/competions/view/{id}', ['as' => 'manage.competion.view', 'uses' => 'OwnerCompetionController@getViewCompetions'])->middleware('owner');
-    Route::get('/manage/competions/view/{id}', ['as' => 'manage.competion.view', 'uses' => 'OwnerCompetionController@getViewCompetions'])->middleware('owner');
-    Route::get('/manage/competions/{id}/getWinner', ['as' => 'manage.competion.winner', 'uses' => 'OwnerCompetionController@competitionWinner'])->middleware('owner');
-*/
-    //categories
+
+//categories
     Route::get('/manage/categories/data', ['as' => 'manage.category.all.data', 'uses' => 'OwnerCategoryController@getData'])->middleware('owner');
 
     Route::get('/manage/categories', ['as' => 'manage.category.all', 'uses' => 'OwnerCategoryController@getShowAll'])->middleware('owner', 'permission:view all categories|Administer');
@@ -382,10 +67,8 @@ Route::group(['prefix' => 'owner'], function () {
     Route::get('/manage/products/data', ['as' => 'manage.products.all.data', 'uses' => 'OwnerProductController@getData'])->middleware('owner');
 
     Route::get('/manage/products', ['as' => 'manage.products.all', 'uses' => 'OwnerProductController@getShowAll'])->middleware('owner', 'permission:view all products|Administer');
-    // Route::get('/manage/products/ajax', ['as' => 'manage.products.all.ajax', 'uses' => 'OwnerProductController@getShowAll_ajax'])->middleware('owner');
 
    Route::get('/manage/products/movements/{id}', ['as' => 'manage.products.all.movements', 'uses' => 'OwnerProductController@getShowMovements'])->middleware('owner', 'permission:view product movements|Administer');
-   //Route::post('/manage/products/movements/{id}', ['as' => 'manage.products.all.movements', 'uses' => 'OwnerProductController@getShowMovements'])->middleware('owner', 'o_shop');
 
     Route::get('/manage/products/archive', ['as' => 'manage.products.all.archive', 'uses' => 'OwnerProductController@getShowArchived'])->middleware('owner', 'permission:view archived products|Administer');
 
@@ -441,8 +124,6 @@ Route::post('/manage/products/Quantity/save', ['as' => 'manage.products.editQuan
 
     Route::post('/manage/products/deleteQuantity/{id}', ['as' => 'manage.products.deleteQuantity.post', 'uses' => 'OwnerProductController@postDeleteQuantityProduct'])->middleware('owner', 'permission:change product quantity|Administer');
 
-    ////////
-
     Route::get('/manage/subcategories/edit/{id}', ['as' => 'manage.subcategory.edit', 'uses' => 'OwnerSubcategoryController@getEditCategory'])->middleware('owner', 'permission:edit subcategory|Administer');
 
     Route::post('/manage/subcategories/edit/{id}', ['as' => 'manage.subcategory.edit.post', 'uses' => 'OwnerSubcategoryController@postEditCategory'])->middleware('owner', 'permission:edit subcategory|Administer');
@@ -457,20 +138,16 @@ Route::post('/manage/products/Quantity/save', ['as' => 'manage.products.editQuan
 // error access page
 Route::get('/error/access', ['as' => 'errors.unauthorized_access', 'uses' => 'PermissionController@unauthorizedAccess'])->middleware('owner');
 // start  role permission section
+
 // permissions control
    Route::get('/control/used/permissions', ['as' => 'permissions.get.control', 'uses' => 'PermissionController@permissions_get_control'])->middleware('owner', 'permission:get control permissions|Administer');
 
    Route::get('/create/used/permissions', ['as' => 'permissions.used.create', 'uses' => 'PermissionController@create_used_permissions'])->middleware('owner', 'permission:create used permissions|Administer');
-/*
-   Route::get('/add/used/permissions', ['as' => 'permissions.used.add.new', 'uses' => 'PermissionController@add_new_used_permissions'])->middleware('owner', 'permission:add new used permission|Administer');
 
-   Route::post('/store/add/used/permissions', ['as' => 'permissions.store.new.used', 'uses' => 'PermissionController@store_new_used_permissions'])->middleware('owner', 'permission:add new used permission|Administer');
-*/
    Route::get('/delete/used/permissions', ['as' => 'permissions.used.delete', 'uses' => 'PermissionController@delete_used_permissions'])->middleware('owner', 'permission:delete used permissions|Administer');
 // permissions control
 
-
-    // permissions
+// permissions
     Route::get('/all/permissions', ['as' => 'permissions.all', 'uses' => 'PermissionController@index'])->middleware('owner', 'permission:view all permissions|Administer');
 
     Route::get('/create/permissions', ['as' => 'permissions.create', 'uses' => 'PermissionController@create'])->middleware('owner', 'permission:add permission|Administer');
@@ -483,7 +160,7 @@ Route::get('/error/access', ['as' => 'errors.unauthorized_access', 'uses' => 'Pe
 
       Route::get('/delete/permissions/{id}', ['as' => 'permissions.destroy', 'uses' => 'PermissionController@destroy'])->middleware('owner');
 
-      // roles
+// roles
     Route::get('/all/roles', ['as' => 'roles.all', 'uses' => 'RoleController@index'])->middleware('owner', 'permission:view all roles|Administer');
 
      Route::get('/create/roles', ['as' => 'roles.create', 'uses' => 'RoleController@create'])->middleware('owner', 'permission:add role|Administer');
@@ -499,7 +176,7 @@ Route::get('/error/access', ['as' => 'errors.unauthorized_access', 'uses' => 'Pe
 // assign to users
      Route::get('/assign/users/roles', ['as' => 'users.all.roles.assign', 'uses' => 'OwnerController@index'])->middleware('owner', 'permission:assign users roles|Administer');
 
- // soal
+ // log roles
 
     Route::get('/get/log/users/roles', ['as' => 'userroles.getlog', 'uses' => 'OwnerController@userroles_getlog'])->middleware('owner', 'permission:view panel log|Administer');
 
@@ -556,13 +233,6 @@ Route::get('/manage/all/customers/report', ['as' => 'manage.allcustomers.report'
 
 Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.viewprofile', 'uses' => 'OwnerCustomerController@view_customer_profile'])->middleware('owner', 'permission:view customer profile data|Administer');
 
-    //links
-    Route::get('/manage/links/data', ['as' => 'manage.links.all.data', 'uses' => 'OwnerLinksController@getData'])->middleware('owner', 'o_link');
-    Route::get('/manage/links', ['as' => 'manage.links.all', 'uses' => 'OwnerLinksController@getShowAll'])->middleware('owner', 'o_link');
-    Route::get('/manage/links/details/{id}', ['as' => 'manage.link.details', 'uses' => 'OwnerLinksController@getDetails'])->middleware('owner', 'o_link');
-    Route::post('/manage/links/block/{id}', ['as' => 'manage.link.block', 'uses' => 'OwnerLinksController@postBlock'])->middleware('owner', 'o_link');
-    Route::post('/manage/links/active/{id}', ['as' => 'manage.link.active', 'uses' => 'OwnerLinksController@postActive'])->middleware('owner', 'o_link');
-
     //admins
     Route::get('/manage/admins/data', ['as' => 'manage.admins.all.data', 'uses' => 'OwnerAdminController@getData'])->middleware('owner', 'o_admin');
     Route::get('/manage/admins', ['as' => 'manage.admins.all', 'uses' => 'OwnerAdminController@getShowAll'])->middleware('owner', 'o_admin');
@@ -572,20 +242,7 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     Route::post('/manage/admins/edit/{id}', ['as' => 'manage.admins.edit.post', 'uses' => 'OwnerAdminController@postEdit'])->middleware('owner', 'o_admin');
     Route::get('/manage/admins/delete/{id}', ['as' => 'manage.admins.delete', 'uses' => 'OwnerAdminController@getDelete'])->middleware('owner', 'o_admin');
 
-    //video
-
-    //Route::get('/manage/video/add', ['as' => 'manage.video.add', 'user' => 'OwnervideoController@add']);
-    Route::get('/manage/video/add', ['as' => 'manage.video.add', 'uses' => 'OwnerVideoController@add'])->middleware('owner');
-    Route::post('/manage/video/add', ['as' => 'manage.video.add', 'uses' => 'OwnerVideoController@add'])->middleware('owner');
-
-    //Route::post('/manage/video/add', 'OwnervideoController@add');
-
-    //Quantity
-
-    //Route::get('/manage/video/add', ['as' => 'manage.video.add', 'user' => 'OwnervideoController@add']);
-    //Route::get('/manage/quantity/three', ['as' => 'manage.quantity', 'uses' =>'OwnerQuantityController@lessThanThree'])->middleware('owner','o_quantity');
-    //Route::get('/manage/quantity/zero', ['as' => 'manage.zeroquantity', 'uses' =>'OwnerQuantityController@zero'])->middleware('owner','o_quantity');
-
+// quantity section
     Route::get('/manage/quantity/three/data', ['as' => 'manage.quantity.three.data', 'uses' => 'OwnerQuantityController@lessThanThreeData'])->middleware('owner');
 
     Route::get('/manage/quantity/twenty/five', ['as' => 'manage.quantity.three', 'uses' => 'OwnerQuantityController@lessThan25'])->middleware('owner', 'permission:view quantities rate|Administer');
@@ -605,8 +262,6 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     Route::get('/manage/owner/edit/{id}', ['as' => 'manage.owners.edit', 'uses' => 'OwnerController@edit'])->middleware('owner', 'o_owner');
     Route::post('/manage/owner/update/{id}', ['as' => 'manage.owner.update', 'uses' => 'OwnerController@update'])->middleware('owner', 'o_owner');
     Route::get('/manage/owner/delete/{id}', ['as' => 'manage.owners.delete', 'uses' => 'OwnerController@destroy'])->middleware('owner', 'o_owner');
-
-
 
     // all purchases including(pos purchases and only delivered purchases)
 
@@ -628,9 +283,7 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     // online transactions
     Route::get('/manage/purchases/pending', ['as' => 'pending.purchases', 'uses' => 'OwnerPurchaseController@pending'])->middleware('owner', 'permission:pending purchases|Administer');
     Route::get('/manage/purchases/in-progress', ['as' => 'in_progress.purchases', 'uses' => 'OwnerPurchaseController@in_progress'])->middleware('owner', 'permission:in_progress purchases|Administer');
-   /*
-    Route::get('/manage/purchases/online-delieverd', ['as' => 'delieverd.purchases', 'uses' => 'OwnerPurchaseController@delieverd2'])->middleware('owner', 'permission:delieverd purchases|Administer');
-   */
+   
     Route::get('/manage/purchases/pending/{id}', ['as' => 'pending.show', 'uses' => 'OwnerPurchaseController@showPending'])->middleware('owner', 'permission:show pending|Administer');
 
    // view inprogress details
@@ -639,11 +292,10 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     // view cancelled details
     Route::get('/manage/purchases/cancelled/{id}', ['as' => 'cancelled.show.details', 'uses' => 'OwnerPurchaseController@show_cancelled_details'])->middleware('owner', 'permission:view cancelled order details|Administer');
 
-    // view delivered details
-  /*   Route::get('/manage/purchases/delivered/{id}', ['as' => 'delivered.show.details', 'uses' => 'OwnerPurchaseController@show_delivered_details'])->middleware('owner', 'permission:view delivered order details|Administer');*/
-
     Route::get('/manage/purchases/cancelled', ['as' => 'cancelled.purchases', 'uses' => 'OwnerPurchaseController@cancelled'])->middleware('owner', 'permission:cancelled purchases|Administer');
+
     Route::PATCH('/manage/purchases/cancel/{id}', ['as' => 'manage.purchase.cancel', 'uses' => 'OwnerPurchaseController@cancelPurchase'])->middleware('owner', 'permission:cancel pending purchases|Administer');
+    
     Route::PATCH('/manage/purchases/restore/{id}', ['as' => 'restore.purchase', 'uses' => 'OwnerPurchaseController@restorePurchase'])->middleware('owner', 'permission:restore cancelled purchases|Administer');
 
     // all online discount products
@@ -651,14 +303,8 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     Route::post('/manage/product/discount/{id}' , 'OnlineDiscountController@store')->name('online.discount.store')->middleware('owner', 'permission:create discount|Administer');
     Route::get('/manage/discount/product/{id}' , 'OnlineDiscountController@destroy')->name('online.discount.destroy')->middleware('owner', 'permission:delete discount|Administer');
 
-    // Product review
-    // Route::get('/manage/product/reviews/{id}' ,  'ReviewController@show')->name('product.reviews')->middleware('owner', 'permission:product reviews|Administer');
-
-
     // all wholesale custommers report
     Route::get('/manage/wholesale/purchases/report', ['as' => 'manage.wholesale.customers.purchases', 'uses' => 'OwnerPurchaseController@all_wholesale_customers_purchases'])->middleware('owner', 'permission:view wholesale purchases report|Administer');
-
-    //Route::get('/manage/purchasessss/', ['uses' => 'OwnerPurchaseController@get']);
 
     Route::get('/manage/purchases/in_progress', ['as' => 'manage.purchase.all.in_progress', 'uses' => 'OwnerPurchaseController@getShowAllInProgress'])->middleware('owner', 'o_purchase');
 
@@ -679,37 +325,14 @@ Route::get('/manage/view/customer/profile/{id}', ['as' => 'manage.customers.view
     Route::patch('/manage/shipments/{id}/edit' , ['as' => 'shipment.update', 'uses' => 'ShipmentController@update'])->middleware('owner', 'permission:shipment edit|Administer');
     Route::delete('/manage/shipments/{id}' , ['as' => 'shipment.destroy', 'uses' => 'ShipmentController@destroy'])->middleware('owner', 'permission:shipment destroy|Administer');
 
-    //Route::get('/manage/purchases/reports', ['as' => 'manage.purchase.all.reports', 'uses' => 'OwnerPurchaseController@getReports'])->middleware('owner', 'o_purchase');
-
-
-    Route::get('/manage/purchases/bills/get_unassgined/{vendor_id}', ['as' => 'manage.purchase.bills', 'uses' => 'OwnerPurchaseController@getUnassginedBills'])->middleware('owner', 'o_purchase');
-    Route::get('/manage/purchases/bills/settle/{bill_id}', ['as' => 'manage.purchase.bill.settle', 'uses' => 'OwnerPurchaseController@billSettle'])->middleware('owner', 'o_purchase');
-    Route::post('/manage/purchases/bills/settle', ['as' => 'manage.purchase.bill.post.settle', 'uses' => 'OwnerPurchaseController@postBillSettle'])->middleware('owner', 'o_purchase');
     Route::get('/manage/purchases/edit/{id}', ['as' => 'manage.purchase.edit', 'uses' => 'OwnerPurchaseController@getEditPurchase'])->middleware('permission:purchase status|Administer');
+
     Route::post('/manage/purchases/edit/{id}', ['as' => 'manage.purchase.edit.post', 'uses' => 'OwnerPurchaseController@postEditPurchase'])->middleware('owner', 'permission:manage delieverd|Administer');
     Route::get('/manage/purchases/details/{id}', ['as' => 'manage.purchase.details', 'uses' => 'OwnerPurchaseController@getShowDetails'])->middleware('owner', 'o_purchase');
     Route::get('/manage/purchases/to_delivered/{id}', ['as' => 'manage.purchase.to_delivered', 'uses' => 'OwnerPurchaseController@to_delivered'])->middleware('owner', 'permission:manage delieverd|Administer');
     Route::get('/manage/purchases/delete/{id}', ['as' => 'manage.purchase.delete', 'uses' => 'OwnerPurchaseController@getDeletePurchase'])->middleware('owner', 'o_purchase');
     Route::get('/manage/purchase/refund',['as' => 'manage.purchase.refund','uses' => 'OwnerPurchaseController@getRefund'])->middleware('owner','o_purchase');
     Route::post('/manage/purchase/refund',['as' => 'manage.purchase.refund','uses' => 'OwnerPurchaseController@postRefund'])->middleware('owner','o_purchase');
-
-    // SUPPLIERS
-    Route::get('/manage/suppliers/data', ['as' => 'manage.suppliers.all.data', 'uses' => 'OwnerSupplierController@getData'])->middleware('owner', 'o_supplier');
-    Route::get('/manage/suppliers', ['as' => 'manage.suppliers.all', 'uses' => 'OwnerSupplierController@getShowAll'])->middleware('owner', 'o_supplier');
-    Route::get('/manage/suppliers/create', ['as' => 'manage.suppliers.create', 'uses' => 'OwnerSupplierController@getCreate'])->middleware('owner', 'o_supplier');
-    Route::post('/manage/suppliers/store', ['as' => 'manage.suppliers.store', 'uses' => 'OwnerSupplierController@postStore'])->middleware('owner', 'o_supplier');
-    Route::get('/manage/suppliers/edit/{id}', ['as' => 'manage.suppliers.edit', 'uses' => 'OwnerSupplierController@getEditSupplier'])->middleware('owner', 'o_supplier');
-    Route::post('/manage/suppliers/edit/{id}', ['as' => 'manage.suppliers.edit.post', 'uses' => 'OwnerSupplierController@postEditSupplier'])->middleware('owner', 'o_supplier');
-    Route::get('/manage/suppliers/delete/{id}', ['as' => 'manage.suppliers.delete', 'uses' => 'OwnerSupplierController@getDelete'])->middleware('owner', 'o_supplier');
-
-    //B2B products
-    Route::get('/manage/products/bb/data', ['as' => 'manage.products.bb.all.data', 'uses' => 'OwnerBBProductController@getData'])->middleware('owner', 'o_b2b');
-    Route::get('/manage/products/bb', ['as' => 'manage.products.bb.all', 'uses' => 'OwnerBBProductController@getShowAll'])->middleware('owner', 'o_b2b');
-    Route::get('/manage/products/bb/create', ['as' => 'manage.products.bb.create', 'uses' => 'OwnerBBProductController@getCreate'])->middleware('owner', 'o_b2b');
-    Route::post('/manage/products/bb/store', ['as' => 'manage.products.bb.store', 'uses' => 'OwnerBBProductController@postStore'])->middleware('owner', 'o_b2b');
-    Route::get('/manage/products/bb/edit/{id}', ['as' => 'manage.products.bb.edit', 'uses' => 'OwnerBBProductController@getEditProduct'])->middleware('owner', 'o_b2b');
-    Route::post('/manage/products/bb/edit/{id}', ['as' => 'manage.products.bb.edit.post', 'uses' => 'OwnerBBProductController@postEditProduct'])->middleware('owner', 'o_b2b');
-    Route::get('/manage/products/bb/delete/{id}', ['as' => 'manage.products.bb.delete', 'uses' => 'OwnerBBProductController@delete'])->middleware('owner', 'o_b2b');
 
     // Sellers
     Route::get('/manage/sellers', ['as' => 'manage.sellers.all', 'uses' => 'OwnerSellerController@getShowAll'])->middleware('owner', 'permission:view all sellers|Administer');
@@ -736,29 +359,15 @@ Route::get('seller/{id}/history/by/kilo', 'OwnerSellerController@view_seller_his
 
  Route::get('/manage/sellers/specific/log/activities/{id}', ['as' => 'manage.sellers.specificlog.activities', 'uses' => 'OwnerSellerController@specific_log'])->middleware('owner');
 
-// sellers report new
- //Route::get('/manage/all/sellers/report', ['as' => 'manage.allsellers.report', 'uses' => 'OwnerSellerController@all_sellers_report'])->middleware('owner', 'permission:view sellers report|Administer');
-
   Route::get('/manage/all/sellers/report', ['as' => 'manage.allsellers.report', 'uses' => 'OwnerSellerController@all_sellers_report_differentstores'])->middleware('owner', 'permission:view sellers report|Administer');
-
-
- // Route::get('/manage/all/sellers/bykilo/report', ['as' => 'manage.allsellers.kilo.report', 'uses' => 'OwnerSellerController@all_sellers_bykilo_report'])->middleware('owner', 'permission:view sellers by kilo report|Administer');
 
  Route::get('/manage/all/sellers/bykilo/report', ['as' => 'manage.allsellers.kilo.report', 'uses' => 'OwnerSellerController@all_sellers_bykilo_report_differentstores'])->middleware('owner', 'permission:view sellers by kilo report|Administer');
 
-
- // Route::get('/manage/requests', ['as' => 'owner.requests', 'uses' => 'OwnerController@requests_log'])->middleware('owner', 'permission:view pos log|Administer');
-
- // Route::get('/manage/requests', ['as' => 'owner.requests', 'uses' => 'OwnerController@requests_log2'])->middleware('owner', 'permission:view pos log|Administer');
-  
   Route::get('/manage/requests', ['as' => 'owner.requests', 'uses' => 'OwnerController@requests_log3'])->middleware('owner', 'permission:view pos log|Administer');
 
   Route::get('/log/activities/api/specific/{id}', ['as' => 'specific.api.activity', 'uses' => 'OwnerController@specific_api_activity'])->middleware('owner');
 
-//Route::get('delete/seller/{id}/history', 'OwnerSellerController@delete_seller_history')->name('sellers.history.delete');
-
     //REPORTS
-
     Route::get('/manage/report/all', ['as' => 'manage.report.all', 'uses' => 'OwnerReportController@getShowAll'])->middleware('owner', 'o_shop');
 
     Route::get('/manage/report/orders', ['as' => 'manage.report.orders', 'uses' => 'OwnerReportController@getOrders'])->middleware('owner', 'o_shop');
@@ -766,17 +375,13 @@ Route::get('seller/{id}/history/by/kilo', 'OwnerSellerController@view_seller_his
     Route::get('/manage/report/top', ['as' => 'manage.report.top', 'uses' => 'OwnerReportController@getTops'])->middleware('owner', 'o_shop');
 
     //Stores
-
     Route::get('/manage/stores/data', ['as' => 'manage.store.all.data', 'uses' => 'OwnerStoreController@getData'])->middleware('owner');
 
     Route::get('/manage/stores', ['as' => 'manage.store.all', 'uses' => 'OwnerStoreController@getShowAll'])->middleware('owner')->middleware('owner', 'permission:view all stores|Administer');
 
-
     Route::get('/manage/stores/create', ['as' => 'manage.store.create', 'uses' => 'OwnerStoreController@getCreate'])->middleware('owner', 'permission:create store|Administer');
 
     Route::post('/manage/stores/store', ['as' => 'manage.store.store', 'uses' => 'OwnerStoreController@postStore'])->middleware('owner', 'permission:create store|Administer');
-
-    //Route::get('/manage/stores/reports', ['as' => 'manage.store.reports', 'uses' => 'OwnerStoreController@getStoreReports'])->middleware('owner', 'o_store');
 
     // Pdf Generators
 
@@ -806,10 +411,6 @@ Route::get('/edit/tags/{id}', ['as' => 'product.edittag', 'uses' => 'OwnerProduc
 Route::post('/edit/tags/save', ['as' => 'product.edittag.save', 'uses' => 'OwnerProductController@edittag_save'])->middleware('owner', 'permission:edit tag|Administer');
 
 Route::get('/delete/tags/{id}', ['as' => 'product.deletetag', 'uses' => 'OwnerProductController@deletetag'])->middleware('owner', 'permission:delete tag|Administer');
-
-//Route::get('/manage/log', ['as' => 'owner.log', 'uses' => 'OwnerController@log'])->middleware('owner', 'permission:view panel log|Administer');
-
-// Route::get('/manage/log/requests', ['as' => 'owner.log.requests', 'uses' => 'OwnerController@log_requests'])->middleware('owner', 'o_owner');
 
 Route::get('/manage/specific/log/{id}', ['as' => 'manage.activities.specific', 'uses' => 'OwnerController@specific_log'])->middleware('owner', 'permission:view panel log|Administer');
 
@@ -970,46 +571,11 @@ Route::get('manage/bill/details', ['as' => 'manage.get.bill.details', 'uses' => 
 
     Route::get('/manage/stores/sellers/{id}', ['as' => 'manage.store.sellers', 'uses' => 'OwnerStoreController@getShowSellers'])->middleware('owner', 'permission:view store sellers|Administer');
 
-
-   // Route::get('/manage/all/stores/purchases', ['as' => 'manage.allstores.purchases', 'uses' => 'OwnerStoreController@allstores_purchases2'])->middleware('owner', 'o_store');
-
     Route::get('/manage/stores/edit/{id}', ['as' => 'manage.store.edit', 'uses' => 'OwnerStoreController@getEditStore'])->middleware('owner', 'permission:edit store|Administer');
 
     Route::post('/manage/stores/edit/{id}', ['as' => 'manage.store.edit.post', 'uses' => 'OwnerStoreController@postEditStore'])->middleware('owner', 'permission:edit store|Administer');
 
     Route::get('/manage/stores/delete/{id}', ['as' => 'manage.store.delete', 'uses' => 'OwnerStoreController@getDeleteStore'])->middleware('owner', 'permission:delete store|Administer');
-
-    //ACCESSORIES
-    Route::get('/manage/accessories/data', ['as' => 'manage.accessory.all.data', 'uses' => 'OwnerAccessoryController@getData'])->middleware('owner', 'o_accessory');
-    Route::get('/manage/accessories', ['as' => 'manage.accessory.all', 'uses' => 'OwnerAccessoryController@getShowAll'])->middleware('owner', 'o_accessory');
-
-    Route::get('/manage/accessories/create', ['as' => 'manage.accessory.create', 'uses' => 'OwnerAccessoryController@getCreate'])->middleware('owner', 'o_accessory');
-    Route::post('/manage/accessories/store', ['as' => 'manage.accessory.store', 'uses' => 'OwnerAccessoryController@postStore'])->middleware('owner', 'o_accessory');
-
-    Route::get('/manage/accessories/edit/{id}', ['as' => 'manage.accessory.edit', 'uses' => 'OwnerAccessoryController@getEditAccessory'])->middleware('owner', 'o_accessory');
-
-    Route::post('/manage/accessories/edit/{id}', ['as' => 'manage.accessory.edit.post', 'uses' => 'OwnerAccessoryController@postEditAccessory'])->middleware('owner', 'o_accessory');
-
-    Route::get('/manage/accessories/delete/{id}', ['as' => 'manage.accessory.delete', 'uses' => 'OwnerAccessoryController@getDeleteAccessory'])->middleware('owner', 'o_accessory');
-
-    //DIGITALS
-    Route::get('/manage/digital/data', ['as' => 'manage.digital.all.data', 'uses' => 'OwnerDigitalController@getData'])->middleware('owner', 'o_digital');;
-
-    Route::get('/manage/digital', ['as' => 'manage.digital.all', 'uses' => 'OwnerDigitalController@getShowAll'])->middleware('owner')->middleware('owner', 'o_digital');;
-
-    Route::get('/manage/digital/create', ['as' => 'manage.digital.create', 'uses' => 'OwnerDigitalController@getCreate'])->middleware('owner', 'o_digital');
-    Route::post('/manage/digital/store', ['as' => 'manage.digital.store', 'uses' => 'OwnerDigitalController@postStore'])->middleware('owner', 'o_digital');
-
-    Route::get('/manage/digital/edit/{id}', ['as' => 'manage.digital.edit', 'uses' => 'OwnerDigitalController@getEditDigital'])->middleware('owner', 'o_digital');
-    Route::post('/manage/digital/edit/{id}', ['as' => 'manage.digital.edit.post', 'uses' => 'OwnerDigitalController@postEditDigital'])->middleware('owner', 'o_digital');
-    Route::get('/manage/digital/delete/{id}', ['as' => 'manage.digital.delete', 'uses' => 'OwnerDigitalController@getDeleteDigital'])->middleware('owner', 'o_digital');
-
-    //Analytics
-    Route::get('/manage/analytics', ['as' => 'manage.analytics', 'uses' => 'OwnerAnalyticsController@getshowAll'])->middleware('owner');
-    Route::get('/manage/analytics/online_users', ['as' => 'manage.online', 'uses' => 'OwnerAnalyticsController@online_users'])->middleware('owner');
-
-
-
 
     // attribute_type
 
@@ -1039,7 +605,6 @@ Route::get('manage/bill/details', ['as' => 'manage.get.bill.details', 'uses' => 
 
 
     // slider
-
     Route::get('manage/slider/create',['as' => 'manage.slider.create','uses' =>'SliderController@create'])->middleware('owner');
     Route::get('manage/sliders',['as'=>'manage.sliders','uses'=>'SliderController@index'])->middleware('owner');
     Route::post('manage/slider/create',['as' => 'manage.slider.store','uses' => 'SliderController@store'])->middleware('owner');
@@ -1064,34 +629,17 @@ Route::get('manage/bill/details', ['as' => 'manage.get.bill.details', 'uses' => 
 
     Route::get('manage/banner/delete/{id}',['as' => 'manage.banner.delete','uses' => 'BannerController@destroy'])->middleware('owner', 'permission:delete banner|Administer');
 
-
-
 });
 
+});  // refers to lang braces
 
 
-//  All Sales Reports
-// Route::group(['prefix' => 'reports/'], function () {
-//     Route::get('daily', ['as' => 'reports.daily', 'uses' => 'ReportsController@getDailySales']);
-//     Route::get('weekly', ['as' => 'reports.weekly', 'uses' => 'ReportsController@getWeeklySales']);
-//     Route::get('monthly', ['as' => 'reports.monthly', 'uses' => 'ReportsController@getMonthlyales']);
-// });
-
-Route::get('/fo', function () {
-    echo "openssl.cafile: ", ini_get('openssl.cafile'), "\n";
-    echo "curl.cainfo: ", ini_get('curl.cainfo'), "\n";
-});
-
-Route::get('/fb-register', 'SocialAuthController@redirect');
-Route::get('/callback', 'SocialAuthController@callback');
 
 // all excel routes
 Route::get('/excel/products' , 'OwnerProductController@excel')->name('excel.products');
-
 Route::get('/excel/purchases' , 'OwnerPurchaseController@excel')->name('excel.purchases');
 
 // start excel feedback
-// ahmed excel 
 
 Route::get('/allDone/purchases/{from}/{to}' , 'OwnerPurchaseController@ahmed')->name('excel.ahmed');
 Route::get('/allCustomerss/{from}/{to}' , 'OwnerCustomerController@ahmed')->name('allCustomerss.excel');

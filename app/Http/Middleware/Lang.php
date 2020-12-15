@@ -5,6 +5,9 @@ namespace App\Http\Middleware;
 use Closure;
 use Auth;
 use App;
+use Session;
+use Artisan;
+
 class Lang
 {
     /**
@@ -16,8 +19,9 @@ class Lang
      */
     public function handle($request, Closure $next)
     {
-        $lang = session('language','en');
+        $lang = Session::get('language');
         App::setLocale($lang);
+        Artisan::call('optimize:clear');
         return $next($request);
     }
 }

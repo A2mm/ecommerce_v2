@@ -9,15 +9,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Usertype;
 use App\Order;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Permission\Traits\HasRoles;
-use Spatie\Activitylog\Contracts\Activity;
+//use Spatie\Activitylog\Traits\LogsActivity;
+ use Spatie\Permission\Traits\HasRoles;
+//use Spatie\Activitylog\Contracts\Activity;
 
 class User extends Authenticatable
 {
     use Notifiable;
     use SoftDeletes;
-    use LogsActivity;
+    // use LogsActivity;
     use HasRoles;
 
     /**
@@ -26,7 +26,7 @@ class User extends Authenticatable
      * @var array
      */
 
-    protected static $logAttributes = ['name', 'email', 'phone', 'usertype_id', 'role', 'suspend', 'image', 'password'];
+   // protected static $logAttributes = ['name', 'email', 'phone', 'usertype_id', 'role', 'suspend', 'image', 'password'];
 
     protected $fillable = [
         'slug', 'name', 'email', 'password', 'new_email', 'new_name', 'prev_privillige', 'country_id', 'usertype_id' ,'role', 'payee_name', 'bank_account', 'language', 'hoppy', 'sex', 'job', 'birthdate', 'api_token', 'status', 'code', 'points', 'facebook_id', 'customerOrNot', 'phone', 'address', 'deleted_at', 'image',  'suspend'
@@ -41,11 +41,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function tapActivity(Activity $activity, string $eventName)
-    {
-      require '../../activityipget.php';
-      $activity->ip = $ip;
-    }
 
     public function role($role)
     {

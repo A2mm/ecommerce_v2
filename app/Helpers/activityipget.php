@@ -1,9 +1,5 @@
 <?php
- //$clientip = getUserIpAddr(); 
-// return $clientip;
-
-/*function getRealIpAddr()
-{*/
+ 
     if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
     {
       $ip=$_SERVER['HTTP_CLIENT_IP'];
@@ -16,9 +12,4 @@
     {
       $ip=$_SERVER['REMOTE_ADDR'];
     }
-  //  return $ip;
-//}  
-
-// $ip = getRealIpAddr();
-
  ?>

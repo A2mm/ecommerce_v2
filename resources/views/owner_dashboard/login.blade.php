@@ -40,17 +40,5 @@
 
 </div><!-- /.login-box -->
 <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-<script>
-$.ajax({
- url: 'https://luxgems.co.uk/admin/public/api/product/search',
- method: 'post',
- data: {
-   word: 'ring'
- },
- success: function () {
-   console.log("hhhhhhh");
- }
-});
-</script>
 
 @include('owner_dashboard.footer')

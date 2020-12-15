@@ -22,20 +22,8 @@ class TrackMiddleware
     public function terminate($request, $response)
     {
       $url = $request->fullUrl();
-      // $ip  = $request->ip();
-         /*  if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
-            {
-              $ip = $_SERVER['HTTP_CLIENT_IP'];
-            }
-            elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
-            {
-              $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            }
-            else
-            {
-              $ip = $_SERVER['REMOTE_ADDR'];
-            }*/
-      include(app_path() . '/activityipget.php');
+
+      // include(app_path() . '/activityipget.php');
      // $activity->ip = $ip;
            // return $ip; 
      // $ip = $_SERVER['REMOTE_ADDR'];

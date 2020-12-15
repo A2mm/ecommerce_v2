@@ -147,11 +147,11 @@ class Product extends Model
         return $this->hasManyThrough('App\Store', 'App\ProductStoreQuantity', 'product_id', 'id', 'id', 'store_id')->distinct();
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php';
       $activity->ip = $ip;
-    }
+    }*/
 
     public function images()
     {

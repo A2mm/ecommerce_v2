@@ -5,21 +5,18 @@
     @if(isset($page_title))
     <title>{{$page_title}}</title>
     @else
-    <title>{{trans('layout.Luxgems Shop')}}</title>
-    @endif @if(isset($page_description))
-    <meta name="description" content="{{$page_description}}"> @else
-    <meta name="description" content="LuxGems is an online store where you can buy accessories for Woman, Men and Kids.
-Our products are designed in Europe and made from most precious gemstones and silver.
-We have wide range of luxurious products that will meet your needs. "> @endif
-<meta property="og:title" content="{{trans('layout.Luxgems Shop')}}" />
+    <title>{{ 'project' }}</title>
+    @endif
+
+<meta property="og:title" content="{{ 'project' }}" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="{{asset('logos_e/logo_2_m.png')}}" />
 
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="keywords" content="Luxgems market" />
-    <link rel="shortcut icon" type="image/png" href="https://luxgems.co.uk/public/logos_e/fav.ico" />
+    <meta name="keywords" content="" />
+    <link rel="shortcut icon" type="image/png" href="" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
     <!--JS-->

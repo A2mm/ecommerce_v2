@@ -20,7 +20,7 @@ class CategoriesTableSeeder extends Seeder
             0 => 
             array (
                 'id' => 1,
-                'name' => 'الاعسال',
+                'name' => 'cat 1',
                 'created_at' => '2019-12-29 14:44:20',
                 'updated_at' => '2019-12-29 14:44:20',
                 'deleted_at' => NULL,
@@ -29,7 +29,7 @@ class CategoriesTableSeeder extends Seeder
             1 => 
             array (
                 'id' => 2,
-                'name' => 'اخرى',
+                'name' => 'cat 2',
                 'created_at' => '2019-12-29 14:44:31',
                 'updated_at' => '2019-12-29 14:44:31',
                 'deleted_at' => NULL,

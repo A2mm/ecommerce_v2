@@ -23,11 +23,11 @@ class ProductStoreQuantity extends Model
         return $this->belongsTo('App\Purchase');
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function store()
     {

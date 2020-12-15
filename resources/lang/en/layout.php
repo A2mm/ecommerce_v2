@@ -12,7 +12,6 @@ return [
 'logout'      => 'logout',
 'cart'      => 'Cart',
 'Copyright'      => 'Copyright',
-'Luxgems Shop' => 'Luxgems Shop',
 '' => '',
 '' => '',
 

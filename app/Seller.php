@@ -24,11 +24,11 @@ class Seller extends Model
         'password',
     ];
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function store()
     {

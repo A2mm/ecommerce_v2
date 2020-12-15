@@ -14,9 +14,9 @@ class Shipment extends Model
 
     protected static $logFillable = true;
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 }

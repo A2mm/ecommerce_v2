@@ -513,68 +513,6 @@ $('#competitions').DataTable({
 
 </script>
 
-
-<script type="text/javascript">
-
-  $('#supplier_users').DataTable( {
-
-      processing: true,
-
-      serverSide: true,
-
-      ajax: "{{route('manage.suppliers.all.data')}}",
-
-      columns: [
-      { data: 'name', name: 'name' },
-      { data: 'email', name: 'email' },
-      { data: 'phone', name: 'phone' },
-      { data: 'address', name: 'address' },
-      { data: 'created_at', name: 'created_at' },
-      { data: 'subcategories', name: 'subcategories', orderable: false, searchable: false},
-      { data: 'action', name: 'action', orderable: false, searchable: false}
-
-      ]
-
-  });
-
-</script>
-
-
-<script type="text/javascript">
-
-  $('#Bproducts').DataTable( {
-
-      processing: true,
-
-      serverSide: true,
-
-      ajax: "{{route('manage.products.bb.all.data')}}",
-
-      columns: [
-
-      { data: 'name', name: 'name' },
-
-      { data: 'arabic_name', name: 'arabic_name' },
-
-      { data: 'description', name: 'description' },
-
-      { data: 'arabic_description', name: 'arabic_description' },
-
-      { data: 'subcategory.name', name: 'subcategory.name' },
-
-      { data: 'price', name: 'price' },
-
-      { data: 'status', name: 'status' },
-
-      { data: 'action', name: 'action', orderable: false, searchable: false}
-
-      ]
-
-  });
-
-</script>
-
-
 <script type="text/javascript">
 $('#stores').DataTable({
   language: {
@@ -671,21 +609,6 @@ $('#stores').DataTable({
 
   });
 
-</script>
-
-
-<script type="text/javascript">
-  $('#digital').DataTable( {
-      processing: true,
-      serverSide: true,
-      ajax: "{{route('manage.digital.all.data')}}",
-      columns: [
-        { data: 'name', name: 'name' },
-        { data: 'description', name: 'description' },
-        { data: 'price', name: 'price' },
-        { data: 'action', name: 'action', orderable: false, searchable: false}
-      ]
-  });
 </script>
 
 <script type="text/javascript">

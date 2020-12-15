@@ -22,11 +22,11 @@ class Subcategory extends Model
         return $this->hasMany('App\Product');
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function category(){
       return $this->belongsTo('App\Category');

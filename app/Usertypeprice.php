@@ -22,11 +22,11 @@ class Usertypeprice extends Model
         return $this->belongsTo(Usertype::class);
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 
     public function product()
     {

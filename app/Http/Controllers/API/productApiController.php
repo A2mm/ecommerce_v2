@@ -3,34 +3,24 @@
 namespace App\Http\Controllers\API;
 
 use App\Accessory;
-use App\Ad;
-use App\Auction;
-use App\AuctionTransaction;
 use App\Cart;
 use App\Category;
 use App\CategoryOnline;
-use App\Competition;
 use App\Coupon;
 use App\Country;
 use App\Configuration;
 use App\Currency;
-use App\DigitalProduct;
 use App\History;
 use App\Http\Controllers\Controller;
-use App\Link;
 use App\Order;
 use App\PasswordReset;
 use App\Product;
 use App\Purchase;
 use App\Review;
-use App\Shape;
 use App\OnlineDiscount;
 use App\Subcategory;
 use App\User;
-use App\UserCompetition;
 use App\Vendor;
-use App\View;
-use App\Visit;
 use App\Wish;
 use App\Attribute;
 use App\Shipment;
@@ -50,9 +40,6 @@ use Pusher;
 use Validator;
 use resources\lang;
 use Illuminate\Database\Eloquent\Builder;
-use App\Slider;
-use App\Banner;
-use App\BannerType;
 use App\PaymentMethod;
 use App\ProductStoreQuantity;
 use App\Usertypeprice;
@@ -71,6 +58,7 @@ class productApiController extends Controller
       }
       return response()->json(['message' =>  __('translations.user_not_found')]);
     }
+
     public function allProducts(Request $request)
     {
        $products = Product::select('id', 'name', 'slug', 'product_benefits')->where('archive', 0)
@@ -160,110 +148,7 @@ class productApiController extends Controller
 
         return response()->json([$response_json ] , 200);
     }
-
-    public function allProductss(Request $request)
-    {
-        $products = Product::select('id', 'name', 'archive', 'arabic_name', 'price', 'local_price', 'country_code', 'small_image', 'category_id', 'subcategory_id')->where('archive', 0)->doesntHave('auction');
-
-        $products = (!isset(request()->subcategory_id) || request()->subcategory_id == 'all') ? $products : $products->where('subcategory_id', $request->subcategory_id);
-        $products = (!isset(request()->category_id) || request()->category_id == 'all') ? $products : $products->whereHas('category', function ($query) use ($request) {
-            $query->where('categories.id', $request->category_id);
-        });
-
-        if ($request->has('country_code')) {
-            $products->where('country_code', $request->country_code);
-        }
-
-        $all = $products->where('main_image', '!=', 'default.jpg')->get()->sortByDesc('quantity')->sortByDesc('created_at');
-
-        if ($request->has('country_code')) {
-            foreach ($all as $product) {
-                $product['price'] = $product->local_price;
-            }
-        }
-
-        // return $all;
-        $zero_products = array();
-        $random_products = array();
-        foreach ($all as $product) {
-            $product->quantity <= 0 ? array_push($zero_products, $product) : array_push($random_products, $product);
-            if ($request->has('country_code')) {
-                if ($product->country_code == $request->country_code) {
-                    $product->local_discount == null ? $product['After_discount'] = '0' : $product['After_discount'] = $product->local_discount;
-                } else {
-                    $product->discount == null ? $product['After_discount'] = '0' : $product['After_discount'] = $product->discount;
-                }
-            } else {
-                $product->discount == null ? $product['After_discount'] = '0' : $product['After_discount'] = $product->discount;
-            }
-        }
-        if (shuffle($random_products)) {
-            $all = array_merge($random_products, $zero_products);
-        }
-
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $col = new Collection($all);
-        $perPage = 500;
-        $currentPageSearchResults = $col->slice(($currentPage - 1) * $perPage, $perPage)->all();
-        $products = new LengthAwarePaginator($currentPageSearchResults, count($col), $perPage);
-        //Product::select('id', 'name', 'arabic_name', 'main_image')->where('category_id',$category->id)->where('subcategory_id',$sub->id)->get();
-
-        //$products = Product::select('id', 'name', 'arabic_name', 'main_image')->get();
-        $final_products = [];
-        foreach ($products->items() as $product) {
-            $product->main_image = asset($product->image_path());
-            array_push($final_products, $product);
-        }
-        //$product->main_image = asset($product->image_path());
-
-        //best seller and mostly viewed products
-        if ($request->has('country_code')) {
-            $best_seller = Product::select('id', 'name', 'arabic_name', 'price', 'main_image', 'local_price', 'country_code', 'small_image', 'category_id', 'subcategory_id')->orderBy('num_of_orders', 'desc')
-                ->where('archive', 0)->where('country_code', $request->country_code)->doesntHave('auction')->first();
-        } else {
-            $best_seller = Product::select('id', 'name', 'arabic_name', 'price', 'local_price', 'country_code', 'main_image', 'small_image', 'category_id', 'subcategory_id')->orderBy('num_of_orders', 'desc')
-            ->doesntHave('auction')
-            ->where('archive', 0)->first();
-        }
-
-        $mostly_viewed = View::groupBy('product_id')
-            ->orderBy('count', 'desc')
-            ->get(['product_id', DB::raw('count(product_id) as count')]);
-        // $mostly_viewed_product = Product::select('id', 'name', 'small_image', 'local_price', 'country_code', 'arabic_name', 'price', 'main_image', 'category_id', 'subcategory_id')
-        //                                   ->doesntHave('auction')->find($mostly_viewed->first()->product_id);
-
-      $realy_mostly_viewed = $mostly_viewed->first();
-
-      if($realy_mostly_viewed){
-        $mostly_viewed_product = Product::select('id', 'name', 'small_image', 'local_price', 'country_code', 'arabic_name', 'price', 'main_image', 'category_id', 'subcategory_id')->doesntHave('auction')->find($mostly_viewed->first()->product_id);
-      }
-      else{
-        $mostly_viewed_product = Product::select('id', 'name', 'small_image', 'local_price', 'country_code', 'arabic_name', 'price', 'main_image', 'category_id', 'subcategory_id')->doesntHave('auction')->orderBy('created_at', 'desc')->first();
-      }
-
-        if (isset($request['api_token'])) {
-            $user = User::where('api_token', $request->api_token)->first();
-            $views = View::where('user_id', $user->id)->get();
-            if (count($views)) {
-                $recommended = 1;
-            } else {
-                $recommended = 0;
-            }
-        } else {
-            $recommended = -1;
-        }
-
-        return response()->json([[
-            'current_page' => $products->currentPage(),
-            'data' => $final_products,
-            'total' => $products->total(),
-            'last_page' => $products->lastPage(),
-            'per_page' => $products->perPage(),
-            'from' => $products->firstItem(),
-            'to' => $products->lastItem(),
-        ], 'bestSeller' => $best_seller, 'mostViewed' => $mostly_viewed_product, 'Recommended' => $recommended]);
-    }
-
+ 
     public function showOneProduct(Request $request)
     {
       $message = [
@@ -301,19 +186,6 @@ class productApiController extends Controller
             }
       
             $user = User::where('api_token' , $request->api_token)->first();
-
-           /* if ($user && $user->status == 0) {
-                return response()->json([
-                    'message' => __('translations.unactivated'), 
-                    'code' => 201, 
-                ], 201);
-            }
-            if ($user && $user->suspend == 1) {
-                 return response()->json([
-                    'message' =>  __('translations.suspended_client'), 
-                    'code' => 202, 
-                ], 201);
-            }*/
         }
 
         else
@@ -453,7 +325,6 @@ class productApiController extends Controller
        
         $user = User::where('api_token', $request->api_token)->first();
 
-        $link = 'http://luxgems.co.uk/product/' . $product->id . '/' . $product->slug;
         $response_json =
         [
           $product,
@@ -465,7 +336,6 @@ class productApiController extends Controller
         return response()->json(['product' =>$response_json , 'related_products' => $relatedProducts , 'code' => 200] , 200);
     }
 
-
     public function search(Request $request)
     {
             $word = $request->word;
@@ -476,9 +346,7 @@ class productApiController extends Controller
                                                                 $q->where('tag', 'like', "%{$word}%");
                                                             })->select('id' , 'name', 'slug', 'product_benefits');
 
-            // if ($request->has('category_id')) {
-            //     $products->where('category_id', $request->category_id);
-            // }
+
             $products = $products->latest()->paginate($perPage);
 
             foreach ($products as $key => $item) {
@@ -487,11 +355,6 @@ class productApiController extends Controller
                 $item->price                = $item->productPrices();
                 $item->price_after_discount = $item->priceWithDiscount();
             }
-
-            // foreach ($products->items() as $product) {
-            //     $product->discount == null ? $product['After_discount'] = '0' : $product['After_discount'] = $product->discount;
-            // }
-
 
         if (count($products->items()) > 0) {
             return response()->json([$products, 'code' => 200] , 200);
@@ -526,30 +389,6 @@ class productApiController extends Controller
         $suppliers = $subcategory->supplier;
         return response()->json($subcategory);
     }
-
-    // public function allAccessory()
-    // {
-    //     $accessories = Accessory::all();
-    //     $filtred_accessories = [];
-    //
-    //     foreach ($accessories as $accessory) {
-    //         if (count($accessory->products) > 0) {
-    //
-    //             $filtred_accessories[] = $accessory;
-    //
-    //         }
-    //     }
-    //
-    //     return response()->json($filtred_accessories);
-    // }
-
-    // public function showOneAccessory(Request $request)
-    // {
-    //     $id = $request->id;
-    //     $accessory = Accessory::get()->find($id);
-    //     return response()->json($accessory);
-    //
-    // }
 
     public function register(Request $request)
     {
@@ -586,11 +425,10 @@ class productApiController extends Controller
         {
           return response()->json([
             'errors' => ['name' => 'يجب ان يتكون الاسم من حروف  و ارقام فقط']]);  // added ahmed
-           //  'message' => ['name' => 'يجب ان يتكون الاسم من حروف  و ارقام فقط']]);
         }
 
         $contactEmail = $request['email'];
-        $subject      = __('translations.luxgems_verification');
+        $subject      = 'project subject verify';
         $code = str_random(6);
 
         $phone      = $request->phone ;
@@ -604,7 +442,6 @@ class productApiController extends Controller
             return response()->json([
                 'code'=> 400 , 
                 'errors'=> 'هذا الرقم قيد الاستخدام'], 400); // added ahmed
-               // 'message'=> 'هذا الرقم قيد الاستخدام'], 400);
           }
         }
          
@@ -694,22 +531,10 @@ class productApiController extends Controller
                 ], 401);
             }
             $user = User::where('email', $request['email'])->first();
-            // $orders_num = Auth::user()->cart_summary_api();
-
-          //  $orders = Order::where('user_id', $user->id)->get(); // new commented ahmed 30/4
-
-            // $checkout_amount = 0;
-            // if ($orders->count()) {
-            //     foreach ($orders as $order) {
-            //         $order['product_price_without_currency'] = $order->getProductPrice($request);
-            //         $checkout_amount += $order->quantity * $order->getProductPrice($request);
-            //     }
-            // }
+           
             return response()->json(['code' => 200, 'message' => true, 'api_token' => $user->api_token,
-             // 'total price' => $checkout_amount
            ], 200);
         } else {
-            // return response()->json(['code' => 200, 'message' => false]);
             return response()->json(['code' => 404, 'message' => 'يرجي التاكد من البريد الالكتروني او كلمة السر']);
         }
     }
@@ -761,24 +586,7 @@ class productApiController extends Controller
 
         $orders_num = $orders->count();
         $old_purchase = Purchase::where('user_id', $user->id)->orderBy('id', 'desc')->first();
-        if (isset($old_purchase)) {
-            // $details = 'available';
-            // $delivery_address = $old_purchase->delivery_address;
-            // $billing_address = $old_purchase->billing_address;
-            // $receptor_mobile = $old_purchase->receptor_mobile;
-            // $buyer_mobile = $old_purchase->buyer_mobile;
-            // $receptor_name = $old_purchase->receptor_name;
-            // $shipment = $old_purchase->shipment ;
-            // $checkout_amount = $old_purchase->getPrice() ;
-        } else {
-            // $details = __('translations.not_available');
-            // $delivery_address = 0;
-            // $billing_address = 0;
-            // $receptor_mobile = 0;
-            // $buyer_mobile = 0;
-            // $receptor_name = 0;
-            // $shipment = 0 ;
-        }
+
         $checkout_amount = $checkout_amount ;
           return response()->json(['products' => $orders, 'total_price' => $checkout_amount, 'number_of_products' => $producNum , 'code' => 200] , 200);
     }
@@ -805,36 +613,19 @@ class productApiController extends Controller
             return response()->json(['code' => 404, 'message' => ['api_token' => __('auth.suspended')]] , 404);
         }
 
-        if ($user && $user->usertype_id == null) {
-            /* return response()->json([
-                'message' =>  __('translations.make_sure_about_number_checkout'), 
-                'code' => 202, 
-            ], 201);*/
+        if ($user && $user->usertype_id == null) 
+        {
              $user->update(['usertype_id' => 1]);
         }
         
         $price = Usertypeprice::where('usertype_id' , 1)->where('product_id' , $product->id)->first();
         $productQuantities = $product->existQuantity();
         $email = $user->email;
-        // REVIEW: flag
-        // $country_configuration = Configuration::where('name', 'main_country')->first();
-        // if ($request->has('country_code')) {
-        //     // $request->country_code != 'EG' && $request->country_code != 'SA' ? $country = 'ww' : $country = $request->country_code;
-        //     $country = Country::where('short_name', $request->country_code)->first();
-        //     if ($country) {
-        //         $country = $request->country_code;
-        //     } else {
-        //         $country = $country_configuration->value;
-        //     }
-        // } else {
-        //     $country = $country_configuration->value;
-        // }
+       
         if ($product) {
-            // return $product->quantity;
-           // $original_quantity = $product->quantity;
+           
             if ($productQuantities > 0) {
                 if ($product->archive == 0) {
-                    // return $request->quantity." | ".$product->quantity;
                     if ($request->quantity <= $productQuantities) {
                         $orders = $user->orders;
                         $already_found = [];
@@ -844,7 +635,6 @@ class productApiController extends Controller
                                 if ($order->product_id == $request->product_id) {
                                     $cart = Cart::where(['product_id' => $request->product_id, 'quantity' => -$order->quantity])->first();
 
-                                   // $quantity = $request->quantity; // addednew
                                     if ($request->quantity == $order->product->availableQuantity()) 
                                     {
                                           $quantity = $request->quantity;
@@ -860,14 +650,10 @@ class productApiController extends Controller
 
                                             if ($quantity > $order->product->availableQuantity()) 
                                             {
-                                            /*  return response()->json([
-                                                'message' => ['quantity' => 'الكمية المطلوبة غير متاحة'] ,
-                                                'code' => 400 ,
-                                              ] , 400); */
+                                           
                                                $order->quantity = $order->product->availableQuantity();
                                                 $order->update([
                                                 'price' => ($product->priceWithDiscount()) * $order->product->availableQuantity(),
-                                        // 'country_code' => 'EG',
                                     ]);
                                             } 
                                             else
@@ -878,13 +664,9 @@ class productApiController extends Controller
                                     ]);
                                             }
 
-                                          /// addednew
-                                         // $price = $order->getProductPrice($request);
+                                         
                                      }
-                                   /* $order->update([
-                                        'price' => ($product->priceWithDiscount()) * $quantity,
-                                        // 'country_code' => 'EG',
-                                    ]); */
+                                  
                                     $order->save();
                                     $cart->quantity = -$order->quantity;
                                     $cart->save();
@@ -896,7 +678,7 @@ class productApiController extends Controller
 
                                     if ($user->email && $user->email != '') {
                                         Mail::send('shop.orderEmail', ['name' => $name, 'bill_id' => $bill_id, 'created_at' => $created_at], function ($message) use ($data) {
-                                            $message->from('me@gmail.com', 'royalpos');
+                                            $message->from('me@gmail.com', 'project');
                                             $message->to($data['email']);
                                             $message->subject($data['subject']);
                                         });
@@ -918,43 +700,16 @@ class productApiController extends Controller
                                 'quantity' => $request['quantity'],
                                 'bill_id' => rand(),
                                 'price' => $price_without_currency * $request['quantity'],
-                                // 'country_code' => 'EG',
                             ]);
                             $new_cart = Cart::create([
                                 'product_id' => $product->id,
-                                // 'vendor_id' => $product->vendor_id,
                                 'store_id' => $product->store_id,
                                 'quantity' => -$request['quantity'],
                                 'reason' => 'order',
                             ]);
-                            // $price = $new_order->getProductPrice($request);
                             $new_order->update([
                                 'price' => ($product->priceWithDiscount()) * $quantity,
-                                // 'country_code' => 'EG',
                             ]);
-                            // if ($request->has('affiliate')) {
-                            //     $slug = explode('/', $request['affiliate']);
-                            //     $link = Link::where('slug', $slug[1])->first();
-                            //
-                            //     $new_order->update([
-                            //         'link_id' => $link->id,
-                            //     ]);
-                            // }
-
-                            if ( $request->has('affiliate') && $request->has('slug') ) {
-                                $user_slug = $request['affiliate'];
-                                $link_slug = $request['slug'];
-
-                                $affiliate = User::where('slug', $user_slug)->first();
-                                if ($affiliate) {
-                                  $link = Link::where('slug', $link_slug)->where('user_id', $affiliate->id)->first();
-                                  if ($link) {
-                                    $new_order->update([
-                                        'link_id' => $link->id,
-                                    ]);
-                                  }
-                                }
-                            }
 
                             $name = $user->name;
                             $bill_id = $new_order->bill_id;
@@ -962,7 +717,7 @@ class productApiController extends Controller
                             $data = array('email' => $user->email, 'subject' => "Cart reminder");
                             if ($email && $email != '') {
                                 Mail::send('shop.orderEmail', ['name' => $name, 'bill_id' => $bill_id, 'created_at' => $created_at], function ($message) use ($data) {
-                                    $message->from('me@gmail.com', 'royalpos');
+                                    $message->from('me@gmail.com', 'project');
                                     $message->to($data['email']);
                                     $message->subject($data['subject']);
                                 });
@@ -1006,7 +761,7 @@ class productApiController extends Controller
                                     if ($user->email && $user->email != '') 
                                     {
                                         Mail::send('shop.orderEmail', ['name' => $name, 'bill_id' => $bill_id, 'created_at' => $created_at], function ($message) use ($data) {
-                                            $message->from('me@gmail.com', 'royalpos');
+                                            $message->from('me@gmail.com', 'project');
                                             $message->to($data['email']);
                                             $message->subject($data['subject']);
                                         });
@@ -1062,7 +817,7 @@ class productApiController extends Controller
                             $data = array('email' => $user->email, 'subject' => "Cart reminder");
                             if ($email && $email != '') {
                                 Mail::send('shop.orderEmail', ['name' => $name, 'bill_id' => $bill_id, 'created_at' => $created_at], function ($message) use ($data) {
-                                    $message->from('me@gmail.com', 'royalpos');
+                                    $message->from('me@gmail.com', 'project');
                                     $message->to($data['email']);
                                     $message->subject($data['subject']);
                                 });
@@ -1166,8 +921,6 @@ class productApiController extends Controller
         $histories = History::where('user_id', $user->id)->count();
         $wishlists = Wish::where('user_id', $user->id)->count();
 
-        //$user = Auth::user();
-       // $user->facebook_id == null ? $user['social'] = false : $user['social'] = true;
         $user['count_product_in_history']            = $histories;
         $user['count_product_in_wishlist']           = $wishlists;
         $user['count_product_in_cart'] = $user->cart_summary_count();
@@ -1221,7 +974,7 @@ class productApiController extends Controller
             $subject = 'Edit Profile';
             $code = str_random(6);
             Mail::send('shop.updateVerificationPage', ['code' => $code], function ($message) use ($contactEmail, $subject) {
-                $message->from('me@gmail.com', 'royalpos');
+                $message->from('me@gmail.com', 'project');
                 $message->to($contactEmail);
                 $message->subject($subject);
             });
@@ -1262,17 +1015,13 @@ class productApiController extends Controller
           'new.different' => 'يجب أن يكون الرقم السري الجديد و الحالي مختلفين'
         ];
         $validator = Validator::make($request->all(), [
-            // 'current' => 'required|min:6',
             'current' => 'required|min:8',
-            // 'new' => 'required|confirmed|min:6|different:current',
             'new' => 'required|min:8|regex:/^(?=.*[0-9])(?=.*[a-zA-Z])([!@#$%^&*(),.?":{}<>a-zA-Z0-9]+)$/|different:current',
             'new_confirmation' => 'required|same:new',
             'api_token' => 'required'
 
         ], $messages);
-        // if (count($validator->errors()) > 0) {
         if ($validator->fails()) {
-            // $messages = $validator->errors();
             return response()->json([
                 'errors' => $validator->errors(),
                 'message' => false,
@@ -1286,10 +1035,6 @@ class productApiController extends Controller
                 ])->save();
 
                 return response()->json(['code' => 200, 'message' => 'تم تغيير الرقم السري بنجاح'], 200);
-
-            /*$user->update([
-            'password' => bcrypt($request['new'])
-            ]);*/
             } else {
                 return response()->json(['code' => 400, 'message' => 'كلمة المرور الحالية غير صحيحة'], 400);
             }
@@ -1311,14 +1056,7 @@ class productApiController extends Controller
           'billing_address.required' => __('validation.custom.billing_address.required'),
           'billing_address.max' => __('validation.custom.billing_address.max'),
           'billing_address.min' => __('validation.custom.billing_address.min'),
-         // 'receptor_mobile.required' => __('validation.custom.receptor_mobile.required'),
-          //'receptor_mobile.min' => __('validation.custom.receptor_mobile.min'),
-          //'receptor_mobile.numeric' => __('validation.custom.receptor_mobile.numeric'),
-         // 'buyer_mobile.required' => __('validation.custom.buyer_mobile.required'),
-          //'buyer_mobile.min' => __('validation.custom.buyer_mobile.min'),
-         // 'buyer_mobile.numeric' => __('validation.custom.buyer_mobile.numeric'),
           'receptor_name.required' => __('validation.custom.receptor_name.required'),
-         // 'receptor_name.max' => __('validation.receptor_name.custom.max'),
         ];
         $validator = Validator::make($request->all(), [
 
@@ -1331,7 +1069,6 @@ class productApiController extends Controller
         ], $messages);
         if ($validator->fails())
         {
-            // $messages = $validator->errors();
             return response()->json([
                 'message' => $validator->errors(),
                 'code'    => 400,
@@ -1414,11 +1151,6 @@ class productApiController extends Controller
                 if (isset($request->code) && $request->code !== ''){
                   $purchase->update(['use_promo' => $request->code]);
                 }
-             /*   if ($purchase) {
-                    foreach ($orders as $itemOrder) {
-                        $itemOrder->update(['purchase_id' => $purchase->id]);
-                    }
-                }*/
                 $total_before = $price_before_promo + $shipmentPrice;
                 $purchase->makeHidden(['created_at', 'updated_at' , 'price' , 'use_promo' , 'purchase_status' , 'user_id']);
                 $purchase->Price = $purchase->getPrice();
@@ -1520,16 +1252,12 @@ class productApiController extends Controller
             $checkout_amount = 0;
             if ($orders->count()) {
                 foreach ($orders as $order) {
-                    // $userPrice = Usertypeprice::where('usertype_id' , $user->usertype_id)->where('product_id' , $order->product_id)->first();
                     $product = Product::where('id' , $order->product_id)->first();
                     $price = $product->priceWithDiscount() ;
                     $checkout_amount += $order->quantity * $price;
                 }
             }
             if ($checkout_amount > 0) {
-                // $purchase->update([
-                //     'price' => $checkout_amount ,
-                // ]);
             } else {
                 return response()->json([
                     'code' => 404,
@@ -1541,11 +1269,6 @@ class productApiController extends Controller
         $user->update([
             'points' => (int) $user->points + (int) $purchase->price,
         ]);
-/*
-        $now = Carbon::now()->toDateTimeString();
-        $coupon = Coupon::where('code', $purchase->use_promo)->where('expiry_date', '>', $now)->first();
-        $user->updateOrder($coupon);
-*/
         $orders = Order::where('user_id', $user->id)->get();
         foreach ($orders as $order) {
             $order->update([
@@ -1595,12 +1318,6 @@ class productApiController extends Controller
         $purchase->save();
 
         return response()->json(['message' => 'تم شراء المنتج بنجاح' , 'code' => 200] , 200);
-    }
-
-    public function generateToken(Request $request)
-    {
-        $clientToken = Braintree_ClientToken::generate();
-        return response()->json(['token' => $clientToken]);
     }
 
     public function brainTree(Request $request)
@@ -1677,32 +1394,7 @@ class productApiController extends Controller
                     'message' => __('validation.custom.something_wrong'),
                 ]);
             }
-        }
-
-        // $gateway = new Braintree_Gateway([
-        //     'accessToken' => 'access_token$sandbox$v7tx7wzvqx3s337t$a471e4fd95b759cd07ec9683e3f4cd12',
-        // ]);
-
-        // set the payment currency to country currency if it set
-        // if ($request->has('country_code')) {
-        //     if ($request->country_code == 'EG' || $request->country_code == 'SA') {
-        //         if ($request->country_code == 'EG') {
-        //             $rate = Swap::latest('EGP/GBP', ['cache_ttl' => 120]);
-        //             $rate = round($rate->getValue(), 2);
-        //             $checkout_amount = $checkout_amount * $rate;
-        //         }
-        //         if ($request->country_code == 'SA') {
-        //             $rate = Swap::latest('SR/GBP', ['cache_ttl' => 120]);
-        //             $rate = round($rate->getValue(), 2);
-        //             $checkout_amount = $checkout_amount * $rate;
-        //         }
-        //     } else {
-        //         $checkout_amount = $checkout_amount;
-        //     }
-        // } else {
-        //     $checkout_amount = $checkout_amount;
-        // }
-
+        }     
 
         if ($request->has('country_code')) {
             $country = Country::where('short_name', $request->country_code)->first();
@@ -1719,9 +1411,6 @@ class productApiController extends Controller
             $checkout_amount = $checkout_amount;
         }
 
-
-
-
         $price = explode(' ', $purchase->price);
         // payment process
 
@@ -1734,16 +1423,7 @@ class productApiController extends Controller
                                            'submitForSettlement' => True
                                              ]
                   ]);
-        // return var_dump($result);
-        // return response()->json($status);
-        // $result = $gateway->transaction()->sale([
-        //     'amount' => $checkout_amount,
-        //     'merchantAccountId' => $currency_configuration->value,
-        //     'paymentMethodNonce' => $request->nonce,
-        //     'options' => [
-        //         'submitForSettlement' => true,
-        //     ],
-        // ]);
+       
         if ($result->success == true) {
             // payment success
             $user->update([
@@ -1867,214 +1547,7 @@ class productApiController extends Controller
         return response()->json($image_paths);
     }
 
-    //Not Now(Do it later)!!!!!
-    public function auction()
-    {
-        $current_time = Carbon::now();
-        $auctions_products = Auction::where('expiry_time','>',$current_time)->orderBy('created_at', 'desc')->get();
-        if($auctions_products){
-          foreach ($auctions_products as $product) {
-              $product->main_image = asset($product->image_path());
-              $expairy_date = Carbon::parse($product->expiry_time)->format('Y-m-d');
-              $product['expire_date'] = $expairy_date;
-              // $product->expiry_time= date('d-m-y', strtotime($product->expiry_time))->format('Y-m-d');
-              $expiry_time = Carbon::parse($product->expiry_time);
-              $product['days_left'] = $current_time->diffInDays($expiry_time,false);
-              // $product['days_left'] = $product->expiry_time;
-              $product_description = Product::where('id',$product->product_id)->first();
-              if(isset($product_description->description))
-              {
-                $product['description'] = $product_description->description;
-              }
-              else {
-                $product['description'] = __('translations.no_description_available');
-              }
-              $currency_id = Product::where('id',$product->product_id)->first();
-              if($currency_id)
-              {
-                $currency_id = $currency_id->currency_id;
-              }
-              $currency_name = Currency::find($currency_id);
-              if($currency_name)
-              {
-                $product['currency'] = $currency_name->name;
-              }else{
-                $product['start_price'] = __('translations.price_not_available_at_the_moment');
-                $product['best_price'] = __('translations.price_not_available_at_the_moment');
-              }
-          }
-          return response()->json(['auction' => $auctions_products]);
-        }
-        return response(__('translations.no_auction_found'));
-    }
-
-    public function getAuctionProduct(Request $request)
-    {
-      $this->validate($request,[
-        'price' => 'numeric|max:11',
-      ]);
-        if ($request->has('api_token'))
-        {
-          $user = User::where('api_token', $request->api_token)->first();
-          if ($user) {
-            $user_name = $user->name;
-          }
-          else {
-            $user_name = __('translations.guest');
-          }
-        }
-        else {
-          $user_name = __('translations.guest');
-        }
-
-
-        if($request->has('id')){
-          $id = $request->id;
-          $auction = Auction::where('product_id', $id)->first();
-          if (!$auction) {
-              return response()->json(['code' => '400', 'message' => __('translations.auction_doesnot_exist')]);
-          }
-          //for images links
-          $product = Product::find($id);
-          if (!$product) {
-              return response()->json(['code' => '400', 'message' => __('translations.auction_isnot_available')]);
-          }
-          $auction_transactions = AuctionTransaction::select('id','user_id','auction_id','price')->where('auction_id', $auction->id)->latest()->take(10)->get();
-          foreach ($auction_transactions as $auction_transaction) {
-            $auction_transaction['user'] = User::where('id',$auction_transaction->user_id)->first()->name;
-          }
-          if ($auction->best_price) {
-              $best_auction_transaction = $auction->auction_transactions()->orderBy('price', 'desc')->first();
-              $best_user_name = $best_auction_transaction->user->name;
-
-              // $best_user = AuctionTransaction::where('price',$auction->best_price)->first();
-              // $best_user_name = User::where('id',$best_user->user_id)->first()->name;
-          } else {
-              $best_user_name = '';
-          }
-          $product = Product::find($id);
-          $product->main_image = asset($product->main_image_path());
-          if ($product->image_1) {
-            $product->image_1 = asset($product->all_images_paths()[1]);
-          }
-          if ($product->image_2) {
-            $product->image_2 = asset($product->all_images_paths()[2]);
-          }
-          if ($product->image_3) {
-            $product->image_3 = asset($product->all_images_paths()[3]);
-          }
-          $auction->main_image = asset($auction->image_path());
-          $auction['description'] = $product->description;
-          return response()->json(['code' => 200 ,'user_name' => $user_name,'auction_product' => $product,'auction' => $auction,'auction_users' => $auction_transactions, 'best_price_person' => $best_user_name]);
-          // return response()->json(['User name'=>$auctionTr]);
-        }
-        return response()->json(['messege' => __('translations.no_products_entered')]);
-
-    }
-
-    public function postAuction(Request $request)
-    {
-        $this->validate($request,[
-          'price' => 'required|digits:8',
-        ]);
-        if(!Product::where('id',$request->id)->exists()){
-          return response()->json(['code' => 202,'message' => __('translations.no_auction_found')]);
-        }
-        $user = User::where('api_token', $request->api_token)->first();
-        $validator = Validator::make($request->all(), ['price' => 'required|min:1|numeric']);
-        if (count($validator->errors()) > 0) {
-            $messages = $validator->errors();
-            return response()->json([
-                'errors' => $messages,
-                'message' => __('translations.this_field_is_required'),
-            ]);
-        }
-
-        //$auction = Auction::find($request['auction_id']);
-        $auction = Auction::where('product_id', $request->id)->first();
-        if (!$auction) {
-            return response()->json(['code' => 400 , 'message' => __('translations.auction_doesnot_exist')]);
-        }
-        if (!isset($auction->best_price)) {
-            if ($request['price'] > $auction->start_price) {
-                $auction->update([
-                    'best_price' => $request['price'],
-                ]);
-
-                $auction_transaction = AuctionTransaction::create([
-                    'auction_id' => $auction->id,
-                    'user_id' => $user->id,
-                    'price' => $request['price'],
-                ]);
-                $price = $auction->best_price;
-                $options = array(
-                    'cluster' => __('translations.eu'),
-                    'encrypted' => true,
-                );
-                $pusher = new Pusher\Pusher(
-                    '9d87d2397a79da6c6ff1',
-                    '08153304f2a1023fac6e',
-                    '380980',
-                    $options
-                );
-
-                $data['message'] = $price;
-                $data['user_name'] = $user->name;
-                $pusher->trigger('my-channel', 'my-event', $data);
-                return response()->json(['code' => 200, 'message' => __('translations.added_to_the_auction')]);
-            } else {
-                return response()->json(['code' => 201, 'message' => __('translations.your_price_is_less_than_the_start_price')]);
-            }
-        } else {
-            if ($request['price'] > $auction->best_price) {
-                $auction->update([
-                    'best_price' => $request['price'],
-                ]);
-
-                $auction_transaction = AuctionTransaction::create([
-                    'auction_id' => $auction->id,
-                    'user_id' => $user->id,
-                    'price' => $request['price'],
-                ]);
-                $price = $auction->best_price;
-                $options = array(
-                    'cluster' => __('translations.eu'),
-                    'encrypted' => true,
-                );
-                $pusher = new Pusher\Pusher(
-                    '9d87d2397a79da6c6ff1',
-                    '08153304f2a1023fac6e',
-                    '380980',
-                    $options
-                );
-
-                $data['message'] = $price;
-                $data['user_name'] = $user->name;
-                $pusher->trigger('my-channel', 'my-event', $data);
-
-                return response()->json(['code' => 200 ,'message' => __('translations.added_to_the_auction')]);
-            } elseif ($request['price'] < $auction->best_price || $request['price'] == $auction->best_price) {
-                return response()->json(['code' => 201 ,'message' => __('translations.your_price_is_less_than_the_best_price')]);
-            }
-        }
-
-        $price = $auction->best_price;
-        $options = array(
-            'cluster' => __('translations.eu'),
-            'encrypted' => true,
-        );
-        $pusher = new Pusher\Pusher(
-            '9d87d2397a79da6c6ff1',
-            '08153304f2a1023fac6e',
-            '380980',
-            $options
-        );
-
-        $data['message'] = $price;
-        $data['user_name'] = $user->name;
-        $pusher->trigger('my-channel', 'my-event', $data);
-    }
-
+   
     public function getHistory(Request $request)
     {
         $user = User::where('api_token', $request->api_token)->first();
@@ -2243,7 +1716,6 @@ class productApiController extends Controller
               }
 
 
-              // $array[$key]['order_status'] = $histories->first()->order_status();
 
               $products = History::where('user_id' , $user->id)->where('bill_id' , $value)->pluck('product_id')->toArray();
               $uniqueProducts = array_unique($products);
@@ -2295,92 +1767,6 @@ class productApiController extends Controller
           'bills' => $array ,
           'current_page' => $currentPage ,
           'code' => 200,
-        ]);
-    }
-
-    // ahmed added new
-    public function getHistory2(Request $request)
-    {
-       // return 'one';
-         $validator = Validator::make($request->all(), [
-            //'per_page'      => 'required|integer',
-            'api_token'    => 'required',
-        ]);
-
-         if ($validator->fails()) {
-          return response()->json([
-              'message' => $validator->errors(),
-              'code' => 400,
-          ], 400);
-        }
-
-         $user = User::where('api_token', $request->api_token)->first();
-
-        if (!$user) {
-          return response()->json([
-            'message' => 'api token غير صالح',
-            'code' => 400,
-          ] , 400);
-        }
-
-            $histories = History::where(['user_id' => $user->id])
-               // ->whereDate('created_at', '<=', $date)
-                ->select('id', 'user_id', 'product_id', 'order_status', 'quantity', 'price', 'refunded', 'created_at', 'bill_id', 'purchase_id', 'sellerdiscount')
-                 ->orderBy('created_at', 'desc')
-                 ->get();
-                 //->paginate($per_page);
-
-        $arr = array();
-
-        foreach ($histories as $history) {
-
-                $currency = 'جنيه';
-                $product = Product::where('id', $history->product_id)->first();
-                if ($history->quantity == 0)
-                {
-                   $item_price = 0;
-                }
-                else
-                {
-                    $item_price = $history->price / $history->quantity;
-                }
-
-                $purchase    = Purchase::where('id', $history->purchase_id)->first();
-                $price_after_discount = $purchase->price;
-                $total_price = $price_after_discount;
-
-                if (in_array($history->bill_id, $arr))
-                {
-                    continue;
-                }
-                else
-                {
-                    array_push($arr, $history->bill_id);
-                }
-        }
-
-
-           $ones = History::where(['user_id' => $user->id])
-                //->whereDate('created_at', '<=', $date)
-                ->whereIn('bill_id', $arr)
-                ->select('id', 'user_id', 'product_id', 'order_status', 'quantity', 'price', 'refunded', 'created_at', 'bill_id', 'purchase_id', 'sellerdiscount')
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-                foreach($ones as $one)
-                {
-                    $product          = Product::where('id', $one->product_id)->first();
-                    $bill_total_price = Purchase::where('bill_id', $one->bill_id)->sum('price');
-
-                    $one['product_name']      = $product->name;
-                    $one['product_unique_id'] = $product->unique_id;
-                    $one['bill_total_price']  = $bill_total_price;
-                    $one['shipment'] = Purchase::where('bill_id', $one->bill_id)->first()['shipment'] > 0 ? Purchase::where('bill_id', $one->bill_id)->first()['shipment']  : null;
-                }
-        return response()->json([
-            // 'histories' => $ones->groupBy('bill_id'),
-            'histories' => $ones->groupBy('bill_id')->take(30),
-            'code' => 200,
         ]);
     }
 
@@ -2571,30 +1957,6 @@ class productApiController extends Controller
         return response()->json(['supplier' => $supplier, 'subcategories' => $subcategories]);
     }
 
-    public function allDigitals()
-    {
-        $digitals = DigitalProduct::select('id', 'name')->get();
-        return response()->json($digitals);
-    }
-    public function getDigital(Request $request)
-    {
-        $digital = DigitalProduct::find($request->id);
-        //$paypalUrl='https://www.sandbox.paypal.com/cgi-bin/webscr';
-        //$paypalId='merchant@atw.com';
-        return response()->json($digital);
-    }
-
-    public function downloadDigitalProduct(Request $request)
-    {
-        $file = public_path() . "/digital_products/" . $request->name . ".pdf";
-
-        $headers = array(
-            'Content-Type: application/pdf',
-        );
-
-        return response()->download($file, $request->name . '.pdf', $headers);
-    }
-
     public function postForgot(Request $request)
     {
         $messages = [
@@ -2617,7 +1979,7 @@ class productApiController extends Controller
             $subject = 'Reset password';
             $code = str_random(6);
             Mail::send('shop.resetCode', ['code' => $code], function ($message) use ($contactEmail, $subject) {
-                $message->from('Luxgems@gmail.com', 'royalpos');
+                $message->from('project@gmail.com', 'project');
                 $message->to($contactEmail);
                 $message->subject($subject);
             });
@@ -2800,7 +2162,7 @@ class productApiController extends Controller
 
                                     if ($user->email && $user->email != '') {
                                         Mail::send('shop.orderEmail', ['name' => $name, 'bill_id' => $bill_id, 'created_at' => $created_at], function ($message) use ($data) {
-                                            $message->from('me@gmail.com', 'royalpos');
+                                            $message->from('me@gmail.com', 'project');
                                             $message->to($data['email']);
                                             $message->subject($data['subject']);
                                         });
@@ -2899,25 +2261,7 @@ class productApiController extends Controller
             $response['details'] = $purchase;
         }
         return response()->json($response);
-        // return response()->json(['message' => 'true', 'details' => $purchase, 'total price' => $checkout_amount, 'number of orders' => $orders_num]);
     }
-
-    // public function allShapes()
-    // {
-    //     $shapes = Shape::all();
-    //     $filtred_shapes = [];
-    //
-    //     foreach ($shapes as $shape) {
-    //         if (count($shape->products) > 0) {
-    //
-    //             $filtred_shapes[] = $shape;
-    //
-    //         }
-    //     }
-    //
-    //     return response()->json($filtred_shapes);
-    //
-    // }
 
     public function facebook(Request $request)
     {
@@ -2969,69 +2313,7 @@ class productApiController extends Controller
             'message'     => 'user created successfully'
         ], 200);
     }
-
-    public function competitionUse(Request $request)
-    {
-        $this->validate($request, [
-            'code' => 'required',
-            'api_token' => 'required',
-            'device_id' => 'required',
-        ]);
-        $user = User::where('api_token', $request->api_token)->first();
-        if (!$user) {
-            return response()->json([
-                'code' => 201,
-                'message' => __('validation.custom.invalid_user'),
-            ]);
-        }
-        $now = Carbon::now()->toDateTimeString();
-        $competition = Competition::where([
-            'code' => $request->code,
-            'user_id' => null,
-        ])->where('expire_date', '>', $now)->first();
-        if (!$competition) {
-            return response()->json([
-                'code' => 201,
-                'message' => __('validation.custom.invalid_competition'),
-            ]);
-        }
-        $userCompetition = UserCompetition::where([
-            'user_id' => $user->id,
-            'competition_id' => $competition->id,
-            'unique_idtfr' => $request->device_id,
-        ])->count();
-        if ($userCompetition > 0) {
-            return response()->json([
-                'code' => 201,
-                'message' => __('validation.custom.used_code'),
-            ]);
-        }
-
-        $user_competition = new UserCompetition;
-        $user_competition->user_id = $user->id;
-        $user_competition->competition_id = $competition->id;
-        $user_competition->unique_idtfr = $request->device_id;
-        if (!$user_competition->save()) {
-            return response()->json([
-                'code' => 201,
-                'message' => __('validation.custom.something_wrong'),
-            ]);
-        }
-        return response()->json([
-            'code' => 200,
-            'message' => __('validation.custom.participating_thanks'),
-        ]);
-    }
-
-    public function ads()
-    {
-        $ad = Ad::orderBy('created_at', 'desc')->first();
-        if (!$ad) {
-            return response()->json(['ads' => null, 'id' => null, 'code' => '201']);
-        }
-        return response()->json(['ads' => asset($ad->image()), 'id' => $ad->product_id, 'code' => '200']);
-    }
-
+   
     public function checkPromoCode(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -3074,20 +2356,6 @@ class productApiController extends Controller
         ]);
     }
 
-    public function wire_transfer()
-    {
-        $configurations = Configuration::whereIn('name', ['account_name', 'bank_name', 'swift_code', 'IBAN'])->get();
-        if ($configurations->count() != 4) {
-            return response()->json(['code' => '400', 'message' => __('translations.bank_wiretransfer_isnot_available_at_the_moment')]);
-        }
-        return response()->json([
-            'account_name' => $configurations->firstWhere('name', 'account_name')->value,
-            'bank_name' => $configurations->firstWhere('name', 'bank_name')->value,
-            'swift_code' => $configurations->firstWhere('name', 'swift_code')->value,
-            'IBAN' => $configurations->firstWhere('name', 'IBAN')->value,
-        ]);
-    }
-
     public function getSearchLists(Request $request)
     {
         $this->validate($request, [
@@ -3095,18 +2363,11 @@ class productApiController extends Controller
         ]);
         $category = Category::where('id', $request->category_id)->first();
         $products = Product::where('category_id', $category->id)->doesntHave('auction');
-        // if (isset($request->accessory_id) && $request->accessory_id != 'all') {
-        //     $accessory = Accessory::where('name', $request->accessory_id)->first();
-        //     $products->where('accessory_id', $accessory->id);
-        // }
         if (isset($request->subcategory_id) && $request->subcategory_id != 'all') {
             $subcategory = Subcategory::where('name', $request->subcategory_id)->first();
             $products->where('subcategory_id', $subcategory->id);
         }
-        // if (isset($request->shape_id) && $request->shape_id != 'all') {
-        //     $shape = Shape::where('name', $request->shape_id)->first();
-        //     $products->where('shape_id', $shape->id);
-        // }
+       
         if ($request->has('country_code')) {
             $products->where('country_code', $request->country_code);
         } else {
@@ -3121,25 +2382,9 @@ class productApiController extends Controller
             array_push($subcategories_ids, $product->subcategory_id);
             array_push($shapes_ids, $product->shape_id);
         }
-        // $accessories = Accessory::select('id', 'name')->whereIn('id', $accessories_ids)->get();
-        // $shapes = Shape::select('id', 'name')->whereIn('id', $shapes_ids)->get();
+       
         $subcategories = Subcategory::select('id', 'name')->whereIn('id', $subcategories_ids)->get();
-        // if (isset($request->accessory_id) && $request->accessory_id != 'all') {
-        //     if ($request->has('country_code')) {
-        //         if ($request->country_code == 'EG' || $request->country_code == 'SA') {
-        //             $products = Product::where('category_id', $category->id)->where('country_code', $request->country_code)->where('archive', 0)->get();
-        //         } else {
-        //             $products = Product::where('category_id', $category->id)->where('archive', 0)->get();
-        //         }
-        //     } else {
-        //         $products = Product::where('category_id', $category->id)->where('archive', 0)->get();
-        //     }
-        //     $accessories_ids = [];
-        //     foreach ($products as $product) {
-        //         array_push($accessories_ids, $product->accessory_id);
-        //     }
-        //     $accessories = Accessory::select('id', 'name')->whereIn('id', $accessories_ids)->get();
-        // }
+       
         if (isset($request->subcategory_id) && $request->subcategory_id != 'all') {
             if ($request->has('country_code')) {
                 $products = Product::where('category_id', $category->id)->doesntHave('auction')->where('country_code', $request->country_code)->where('archive', 0)->get();
@@ -3173,23 +2418,7 @@ class productApiController extends Controller
 
     public function getCountries()
     {
-        // $countries = [
-        //     [
-        //         'country' => 'Egypt',
-        //         'code' => 'EG',
-        //     ],
-        //     [
-        //         'country' => 'Saudia Arabia',
-        //         'code' => 'SA',
-        //     ],
-        //     [
-        //         'country' => 'World Wide',
-        //         'code' => 'ww',
-        //     ],
-        // ];
-
         $countries = Country::get(['long_name AS country', 'short_name AS code']);
-
         $countries = $countries->toArray();
 
         return response()->json(['countries' => $countries]);
@@ -3325,34 +2554,13 @@ class productApiController extends Controller
 
     public function filtered_products(Request $request)
     {
-
-      // $attributes = explode(',',$attr);
-      // return var_dump($arr);
-
-      // SQLSTATE[42S22]: Column not found: 1054 Unknown column 'attributes.id' in 'where clause' (SQL: select `id`, `name`, `arabic_name`, `price`, `main_image`, `subcategory_id` from `products` where `archive` = 0 and not exists (select * from `auctions` where `products`.`id` = `auctions`.`product_id`) and exists (select * from `attribute_products` where `products`.`id` = `attribute_products`.`product_id` and `attributes`.`id` = 1) and exists (select * from `attribute_products` where `products`.`id` = `attribute_products`.`product_id` and `attributes`.`id` = 2) and exists (select * from `attribute_products` where `products`.`id` = `attribute_products`.`product_id` and `attributes`.`id` = 3) and exists (select * from `attribute_products` where `products`.`id` = `attribute_products`.`product_id` and `attributes`.`id` = 4) and `products`.`deleted_at` is null)
-
-
-
       $products = Product::where('archive', 0)->doesntHave('auction');
       $attributes = $request['attributes'];
-      // $attr = json_encode($attr);
-      // return $attr;
-      // $attr =
-      // return is_array($attr) ? 1:0;
-      // return $attr;
-      // return var_dump($attr);
-      // $attr = str_replace(["[","]"],"",$attr);
-      // $attributes = explode(',',$attr);
-      // return var_dump($attributes);
       if(!is_array($attributes)){
         $attributes = json_decode($attributes);
       }
-      if(is_array($attributes) && count($attributes) > 0 ) {
-          // $attributes = $request['attributes'];
-          // $products->whereHas('attribute', function (Builder $query) use ($attributes) {
-          //     // $query->whereIn('attributes.id', $attributes);
-          // });
-          // return "hhh";
+      if(is_array($attributes) && count($attributes) > 0 ) 
+      {
           foreach ($attributes as $key => $value) {
             // return $value;
             $products->whereHas('attribute', function (Builder $query) use ($value) {
@@ -3401,7 +2609,7 @@ class productApiController extends Controller
        
         if ($categories->count() == 0) {
           return response()->json([
-            'categories' => $categories, // 'لا يوجد فئات' , 
+            'categories' => $categories, 
             'code' => 200, 
            ], 201);
         }
@@ -3411,7 +2619,7 @@ class productApiController extends Controller
             'code' => 200,
         ], 200);
     }
-    public function all_catecories_subcategories_nothide(Request $request)
+    public function all_catecories_subcategories2(Request $request)
     {
         if($request->has('category_id')){
           $category_id   = $request->category_id;
@@ -3458,78 +2666,7 @@ class productApiController extends Controller
         }
         return response()->json($response_json);
     }
-    public function getSliders()
-    {
-      $sliders = Slider::all('id','title','image','category_id');
-      if($sliders)
-      {
-        foreach ($sliders as $slider) {
-          $slider->image = asset($slider->image_path());
-        }
-        return response()->json([
-          'code' => 200,
-          'sliders' => $sliders,
-        ]);
-      }
-      return response()->json([
-        'message' => __('translations.no_sliders_found'),
-      ]);
-    }
-    public function getBanners()
-    {
-      $banners = Banner::all('id','title','image','banner_type_id','banner_link');
-      if(!$banners)
-      {
-        return response()->json([
-          'message' => __('translations.no_banners_found'),
-        ]);
-      }
-      $response_array = [];
-      foreach ($banners as $banner) {
-        $banner->image = asset($banner->image_path());
-        array_push($response_array,[
-            'id' => $banner->id,
-            'title' => $banner->title,
-            'image' => $banner->image,
-            'banner_type' => $banner->bannerType->name,
-            'link' => $banner->banner_link,
-            ]);
-      }
-
-      return response()->json([
-        'code' => 200,
-        'banners' =>$response_array,
-      ]);
-    }
-    public function getBanner(Request $request)
-    {
-      if($request->has('type'))
-      {
-        $type = $request->type;
-        $bannerTypeId = BannerType::where('name',$type)->first();
-        // return response()->json($bannerTypeId);
-        if($bannerTypeId)
-        {
-          $banner = Banner::where('banner_type_id',$bannerTypeId->id)->first();
-          $banner->image = asset($banner->image_path());
-          return response()->json([
-            'code' => 200,
-            'banner' => $banner,
-          ]);
-        }
-      }
-      $defaultType = BannerType::where('name','default')->first();
-      $defaultBanner = Banner::where('banner_type_id',$defaultType->id)->first();
-      if(!$defaultBanner)
-      {
-        return response()->json(['message'=>__('translations.no_banners_found')]);
-      }
-      $defaultBanner->image = asset($defaultBanner->image_path());
-      return response()->json([
-        'code' => 200,
-        'banner' => $defaultBanner,
-      ]);
-    }
+ 
     public function payment_methods()
     {
       $payment_methods = PaymentMethod::all('id','name');
@@ -3615,11 +2752,8 @@ class productApiController extends Controller
     {
       $cheapest_prices = Usertypeprice::where('usertype_id' , 1)
                                         ->orderBy('price', 'asc')
-                                        // ->select('id', 'product_id', 'price')
-                                        // ->pluck('product_id');
                                         ->get();
 
-  // return count($cheapest_prices);
       $least = array();
       $count = 0;
       foreach ($cheapest_prices as $cheapest) {
@@ -3656,21 +2790,7 @@ class productApiController extends Controller
               'productPrice_after_discount'  => $ggg->getProductPrice(),
            ]);
       }
-      /* $cheapest_products = Product::whereIn('id', $least)
-                                ->where('archive', 0)
-                               // ->where('available_online', 1)
-                                // ->orderBy('created_at', 'desc')
-                                ->select('id', 'name', 'unique_id')
-                               // ->take(4)
-                                ->get();
-// return $cheapest_products;
-      foreach ($cheapest_products as $product)
-      {
-        $product['product_main_image'] = $product->product_main_image();
-        $product['price'] = $product->productPrices();
-        $product['productPrice_after_discount'] = $product->getProductPrice();
-      }
-*/
+
       return response()->json([
           'cheapest_products' => $one,
           'code' => 200,
@@ -3679,24 +2799,15 @@ class productApiController extends Controller
 
     public function best_seller_products()
     {
-     /* $best_sold = History::where('order_status', 'delivered')->groupBy('product_id')
-                                     ->orderBy('count', 'desc')
-                                     ->take(4)
-                                     ->get(['product_id', DB::raw('sum(quantity) as count')]);*/
-
        $best_sold = History::where('order_status', 'delivered')->groupBy('product_id')
                                      ->orderBy('count', 'desc')
                                      ->take(4)
-                                     // ->pluck('product_id');
                                      ->get(['product_id', DB::raw('sum(quantity) as count')]);
 
-       // $realy_mostly_viewed = $mostly_viewed->first();
         $best_sold_ids = $best_sold->pluck('product_id');
         $best_seller_products = Product::whereIn('id', $best_sold_ids)
                                 ->where('archive', 0)
                                 ->where('available_online', 1)
-                                // ->orderBy('created_at', 'desc')
-                                //->select('id', 'name', 'unique_id')
                                 ->select('id', 'name', 'slug', 'product_benefits')
                                 ->take(4)
                                 ->get();
@@ -3734,7 +2845,6 @@ class productApiController extends Controller
                               ->get();
 // return $banners;
         foreach ($banners as $banner) {
-          //  $banner['image']      = asset($banner->image_path());
             $banner->makeHidden('image');
             $banner['full_image'] = asset($banner->full_image_path());
         }
@@ -3749,27 +2859,6 @@ class productApiController extends Controller
 
     public function get_stores_adress()
     {
-        /*
-        $validator = Validator::make($request->all(), [
-            'api_token' => 'required',
-        ]);
-
-       if ($validator->fails())
-       {
-               return response()->json([
-                'code' => 400,
-                'message' => $validator->errors(),
-            ], 400);
-        }
-     
-      $user = User::where('api_token', $request->api_token)->first();
-      if ($user) {
-          if ($user->suspend == 1) {
-              # code...
-          }
-      }
-      */
-
        $stores = Store::select('name', 'address', 'phone')->get();
       
        return response()->json([

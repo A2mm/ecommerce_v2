@@ -15,7 +15,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
-        \Barryvdh\Cors\HandleCors::class,
+        \Fruitcake\Cors\HandleCors::class,
     ];
 
     /**
@@ -75,7 +75,7 @@ class Kernel extends HttpKernel
         'o_coupon' => \App\Http\Middleware\Owner\Coupon::class,
         'o_purchase' => \App\Http\Middleware\Owner\Purchase::class,
         'o_digital' => \App\Http\Middleware\Owner\Digital::class,
-        'cors' => \Barryvdh\Cors\HandleCors::class,
+        'cors' => \Fruitcake\Cors\HandleCors::class,
         'track' => \App\Http\Middleware\TrackMiddleware::class,
         'assigning' => \App\Http\Middleware\AssigningMiddleware::class,
       //  'canaccess' => \App\Http\Middleware\CanaccessMiddleware::class,
@@ -87,24 +87,6 @@ class Kernel extends HttpKernel
 
     ];
 }
-
-/*
-view all permissions 
-add permission
-edit permission
-
-view all roles 
-add role 
-edit role 
-delete role 
-assign users roles
-create users roles
-view all admins
-create admin
-*/
-
-
-
 
 
 

@@ -10,15 +10,10 @@ use App\Product;
 use App\Order;
 use Datatables;
 use App\User;
-use App\OwnerPrivilege;
-use App\Vendor;
-use App\BProduct;
-use App\Accessory;
 use App\Store;
 use App\Cart;
 use App\Purchase;
 use App\History;
-use App\Link;
 use App\Seller;
 use App\Bannering;
 use App\CategoryOnline;
@@ -663,8 +658,6 @@ class OwnerController extends Controller
     
         if (Auth::attempt(['email' => $request['email'], 'password' => $request['password'], 'role' => 'owner']))
         {
-           // $privileges = OwnerPrivilege::where('user_id', Auth::user()->id)->pluck('privilege');
-           // session()->put('privileges', $privileges);
 
               if (Auth::user()->suspend == 1)
               {
@@ -692,15 +685,6 @@ class OwnerController extends Controller
 
     public function getDashboard()
     {
-        $privileges = OwnerPrivilege::where('user_id', Auth::user()->id)->get();
-        $all_privilege = [];
-        foreach ($privileges as $privilege) {
-            $all_privilege[] = $privilege->privilege;
-        }
-        //return $all_privilege;
-        $zero_products = Product::where('quantity', 0)->get();
-        //$value[] = session()->get('all_privilege');
-
         $products_count = count(Product::all());
         
         $users_count  = User::where(['role' => 'user'])

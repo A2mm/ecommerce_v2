@@ -36,25 +36,11 @@
       <li
         class="treeview {{(Route::current()->getName() == 'manage.subcategory.all' || Route::current()->getName() == 'manage.subcategory.create' || Route::current()->getName() == 'manage.products.all' || Route::current()->getName() == 'manage.products.create' || Route::current()->getName() == 'manage.orders.all' || Route::current()->getName() ==  'manage.purchase.all' || Route::current()->getName() == 'manage.products.all.archive' || Route::current()->getName() == 'manage.category.all' || Route::current()->getName() == 'manage.category.create' || Route::current()->getName() == 'manage.products.refunds' || Route::current()->getName() == 'manage.products.onlinerefunds' || Route::current()->getName() == 'manage.products.view.product.prices' || Route::current()->getName() == 'manage.wholesale.customers.purchases' || Route::current()->getName() == 'shipment.index' || Route::current()->getName() == 'coupon.index' ||  Route::current()->getName() == 'coupon.create' || Route::current()->getName() == 'cancelled.purchases' || Route::current()->getName() == 'online.discount' || Route::current()->getName() == 'categories.online.create' || Route::current()->getName() == 'categories.online' || Route::current()->getName() == 'pending.purchases' || Route::current()->getName() == 'in_progress.purchases' || Route::current()->getName() == 'delieverd.purchases' || Route::current()->getName()=='manage.purchase.all.delivered') ? 'active' : '' }}">
 
-
-
-
-
-
-
-       <?php /* @if(in_array('entire shop', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()) || in_array('subcategory', session()->get('privileges')->toArray()) || in_array('product',
-        session()->get('privileges')->toArray()) || in_array('order', session()->get('privileges')->toArray()) || in_array('coupon', session()->get('privileges')->toArray()) || in_array('purchase', session()->get('privileges')->toArray()) ||
-        in_array('accessory', session()->get('privileges')->toArray()) )
-*/?>
         <a href="#">
           <i class="fa fa-dashboard"></i> <span>{{__('translations.manage_products')}}</span> <i class="fa fa-angle-left pull-right"></i>
         </a>
         <ul class="treeview-menu">
-         <?php /* {{-- <li><a href="{{route('manage.category.all')}}"><i class="fa fa-circle-o"></i>All Categories</a>
-      </li>
-      <li><a href="{{route('manage.category.create')}}"><i class="fa fa-circle-o"></i>Add Category</a></li> --}} */ ?>
-<?php /*
-      @if(in_array('entire shop', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()) || in_array('subcategory', session()->get('privileges')->toArray())) */?>
+       
        @if($logged_user->can('view all subcategories') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.subcategory.all') ? 'active' : ''}}"><a href="{{route('manage.subcategory.all')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_subcategories')}}</a></li>
        @endif
@@ -63,15 +49,11 @@
      @if($logged_user->can('create subcategory') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.subcategory.create') ? 'active' : ''}}"><a href="{{route('manage.subcategory.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.add_subcategory')}}</a></li>
       @endif
-      <?php // @canany ?>
-     <?php /* @endif
-
-      @if(in_array('entire shop', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()) || in_array('category', session()->get('privileges')->toArray())) */?>
+    
       @if($logged_user->can('view all categories') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.category.all') ? 'active' : ''}}"><a href="{{route('manage.category.all')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_categories')}}</a></li>
       @endif
 
-      <?php // @can(['create category', 'Administer']) ?>
        @if($logged_user->can('create category') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.category.create') ? 'active' : ''}}"><a href="{{route('manage.category.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.add_category')}}</a></li>
       @endif
@@ -83,10 +65,6 @@
       @if($logged_user->can('categories online create') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'categories.online.create') ? 'active' : ''}}"><a href="{{route('categories.online.create')}}"><i class="fa fa-circle-o"></i>{{' اضافة فئة اونلاين'}}</a></li>
       @endif
-     <?php // @endcan ?>
-      <?php /* @endif
-
-      @if(in_array('entire shop', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()) || in_array('product', session()->get('privileges')->toArray())) */?>
 
        @if($logged_user->can('view all products') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.products.all') ? 'active' : ''}}"><a href="{{route('manage.products.all')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_products')}}</a></li>
@@ -99,9 +77,6 @@
       @if($logged_user->can('add product') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.products.create') ? 'active' : ''}}"><a href="{{route('manage.products.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.add_product')}}</a></li>
       @endif
-
-     <?php /* @endif
-      @if(in_array('entire shop', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()) || in_array('purchase', session()->get('privileges')->toArray())) */?>
 
        @if($logged_user->can('view transactions') || $logged_user->can('Administer'))
       <li class="{{(Route::current()->getName() == 'manage.purchase.all.delivered') ? 'active' :''}}">
@@ -229,15 +204,10 @@
 </li>
 @endif
     </ul>
-    <?php //@endif ?>
     </li>
-
-    <!--END SHOP-->
-
 
     <!--CUSTOMERS-->
     <li class="treeview {{(Route::current()->getName() == 'manage.customers.all' || Route::current()->getName() == 'manage.customers.create' || Route::current()->getName() == 'manage.allcustomers.report') ? 'active' : '' }}">
-     <?php /* @if(in_array('customer', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray())) */?>
       <a href="#">
         <i class="fa fa-dashboard"></i> <span>{{__('translations.clients_managment')}}</span> <i class="fa fa-angle-left pull-right"></i>
       </a>
@@ -255,13 +225,11 @@
          @endif
 
       </ul>
-      <?php //@endif ?>
     </li>
     <!--END CUSTOMERS-->
 
     <!--Sellers-->
     <li class="treeview {{(Route::current()->getName() == 'manage.sellers.all' || Route::current()->getName() == 'manage.sellers.create' || Route::current()->getName() == 'manage.allsellers.report' || Route::current()->getName() == 'manage.allsellers.kilo.report') ? 'active' : '' }}">
-   <?php /*   @if(in_array('digital', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray())) */?>
 
       <a href="#">
         <i class="fa fa-dashboard"></i> <span>{{__('translations.sellers_management')}}</span> <i class="fa fa-angle-left pull-right"></i>
@@ -284,13 +252,11 @@
         @endif
 
       </ul>
-      <?php // @endif ?>
     </li>
     <!--END Sellers-->
 
     <!--Stores-->
     <li class="treeview {{(Route::current()->getName() == 'manage.store.all' || Route::current()->getName() == 'manage.store.create' || Route::current()->getName() == 'manage.allstores.purchases' || Route::current()->getName() == 'manage.allstores.refunds' || Route::current()->getName() == 'manage.allstores.settlements' || Route::current()->getName() == 'manage.allstores.transfers' || Route::current()->getName() == 'manage.orders.shiped') ? 'active' : '' }}">
-     <?php /* @if(in_array('store', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray())) */?>
 
       <a href="#">
         <i class="fa fa-dashboard"></i> <span>{{__('translations.stores_management')}}</span> <i class="fa fa-angle-left pull-right"></i>
@@ -325,10 +291,7 @@
         @if($logged_user->can('view store transfers') || $logged_user->can('Administer'))
         <li class="{{(Route::current()->getName() == 'manage.allstores.transfers')? 'active' : ''}}"><a href="{{route('manage.allstores.transfers')}}"><i class="fa fa-circle-o"></i>{{__('translations.stores_transfers')}}</a></li>
         @endif
-
-         <?php /*<li class="{{(Route::current()->getName() == 'manage.store.reports')? 'active' : ''}}"><a href="{{route('manage.store.reports')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_stores_reports')}}</a></li> */?>
       </ul>
-    <?php /*  @endif */?>
     </li>
     <!--END Stores-->
 
@@ -346,25 +309,12 @@
         @if($logged_user->can('create banner') || $logged_user->can('Administer'))
         <li class="{{(Route::current()->getName() == 'manage.banner.create')? 'active' : ''}}"><a href="{{route('manage.banner.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.add_banner')}}</a></li>
         @endif
-<?php /*
-        @if($logged_user->can('view all banner types') || $logged_user->can('Administer'))
-        <li class="{{(Route::current()->getName() == 'manage.bannertypes')? 'active' : ''}}"><a href="{{route('manage.bannertypes')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_bannertypes')}}</a></li>
-        @endif
-
-        @if($logged_user->can('create bannertype') || $logged_user->can('Administer'))
-        <li class="{{(Route::current()->getName() == 'manage.bannertype.create')? 'active' : ''}}"><a href="{{route('manage.bannertype.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.create_bannertype')}}</a></li>
-        @endif
-*/ ?>
       </ul>
-    <?php /*  @endif */?>
     </li>
     <!--END banners-->
 
     <!--QUANTITIES-->
     <li class="treeview {{(Route::current()->getName() == 'manage.quantity.zero'||Route::current()->getName() == 'manage.quantity.three'||Route::current()->getName() == 'manage.quantity.lessThanZero') ? 'active' : '' }}">
-      <?php /*
-      @if(in_array('quantity', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-*/?>
       <a href="#">
         <i class="fa fa-dashboard"></i> <span>{{__('translations.quantities_managment')}}</span> <i class="fa fa-angle-left pull-right"></i>
         </a>
@@ -383,149 +333,8 @@
           @endif
 
         </ul>
-
-        <?php //@endif ?>
     </li>
     <!--END QUANTITIES-->
-
-<?php
-/*
-    <!--OWNERS-->
-    <li class="treeview {{(Route::current()->getName() == 'manage.owner.all') ? 'active' : '' }}">
-
-      @if(in_array('owner', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-      <a href="#">
-        <i class="fa fa-dashboard"></i> <span>{{__('translations.owner_staff_managment')}}</span> <i class="fa fa-angle-left pull-right"></i>
-      </a>
-      <ul class="treeview-menu">
-        <li class="{{(Route::current()->getName() == 'manage.owner.all')? 'active' : ''}}"><a href="{{route('manage.owner.all')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_owners')}}</a></li>
-
-        <li class="{{(Route::current()->getName() == 'manage.owner.create')? 'active' : ''}}"><a href="{{route('manage.owner.create')}}"><i class="fa fa-circle-o"></i>{{__('translations.add_owner_staff')}}</a></li>
-      </ul>
-      @endif
-    </li>
-
-    <li class="treeview {{(Route::current()->getName() == 'manage.owner.all') ? 'active' : '' }}">
-      @if(in_array('owner', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-      <a href="#">
-        <i class="fa fa-dashboard"></i> <span>{{__('translations.owner_configurations_managment')}}</span> <i class="fa fa-angle-left pull-right"></i>
-      </a>
-      <ul class="treeview-menu">
-        <li class="{{(Route::current()->getName() == 'manage.configuration.all')? 'active' : ''}}"><a href="{{route('manage.configuration.all')}}"><i class="fa fa-circle-o"></i>{{__('translations.all_configurations')}}</a></li>
-
-        <li class="{{(Route::current()->getName() == 'manage.configuration.edit')? 'active' : ''}}"><a href="{{route('manage.configuration.edit')}}"><i class="fa fa-circle-o"></i>{{__('translations.set_configurations')}}</a></li>
-      </ul>
-      @endif
-    </li>
-
-    <!--END OWNERS-->
-*/
-    ?>
-
-
-    {{--
-      <!--SUPPLIERS-->
-      <li class="treeview {{(Route::current()->getName() == 'manage.suppliers.all'||Route::current()->getName() == 'manage.suppliers.create') ? 'active' : '' }}">
-
-    @if(in_array('supplier', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-
-    <a href="#">
-      <i class="fa fa-dashboard"></i> <span>SUPPLIERS</span> <i class="fa fa-angle-left pull-right"></i>
-    </a>
-    <ul class="treeview-menu">
-      <li class="{{(Route::current()->getName() == 'manage.suppliers.all')? 'active' : ''}}"><a href="{{route('manage.suppliers.all')}}"><i class="fa fa-circle-o"></i>all suppliers</a></li>
-      <li class="{{(Route::current()->getName() == 'manage.suppliers.create')? 'active' : ''}}"><a href="{{route('manage.suppliers.create')}}"><i class="fa fa-circle-o"></i>create supplier</a></li>
-    </ul>
-    @endif
-    </li>
-    <!--END SUPPLIERS-->
-
-
-    <!--B2B Products-->
-    <li class="treeview {{(Route::current()->getName() == 'manage.products.bb.all'||Route::current()->getName() == 'manage.products.bb.create') ? 'active' : '' }}">
-
-      @if(in_array('b2b', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-
-      <a href="#">
-        <i class="fa fa-dashboard"></i> <span>B2B Products</span> <i class="fa fa-angle-left pull-right"></i>
-      </a>
-      <l class="treeview-menu">
-        <li class="{{(Route::current()->getName() == 'manage.products.bb.all')? 'active' : ''}}"><a href="{{route('manage.products.bb.all')}}"><i class="fa fa-circle-o"></i>all products</a></li>
-        <li class="{{(Route::current()->getName() == 'manage.products.bb.create')? 'active' : ''}}"><a href="{{route('manage.products.bb.create')}}"><i class="fa fa-circle-o"></i>create product</a></li>
-      </ul>
-      @endif
-    </li>
-    <!--END B2B Products-->
-
-
-    <!--Reports-->
-    <!-- <li class="treeview {{(Route::current()->getName() == 'manage.products.bb.all'||Route::current()->getName() == 'manage.products.bb.create') ? 'active' : '' }}">
-
-      @if(in_array('b2b', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-
-        <a href="#">
-          <i class="fa fa-dashboard"></i> <span>Reports</span> <i class="fa fa-angle-left pull-right"></i>
-        </a>
-        <ul class="treeview-menu">
-        <li><a href="{{route('manage.report.all')}}"><i class="fa fa-circle-o"></i>ALL</a></li>
-
-        <li><a href="{{route('manage.report.orders')}}"><i class="fa fa-circle-o"></i>Orders</a></li>
-
-        <li><a href="{{route('manage.report.top')}}"><i class="fa fa-circle-o"></i>Top</a></li>
-
-        </ul>
-        @endif
-      </li>
-    END Reports
-
-
-
-    <!--Digitals-->
-    <li class="treeview {{(Route::current()->getName() == 'manage.digital.all'||Route::current()->getName() == 'manage.digital.create') ? 'active' : '' }}">
-
-      @if(in_array('digital', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-
-      <a href="#">
-        <i class="fa fa-dashboard"></i> <span>Digital Products</span> <i class="fa fa-angle-left pull-right"></i>
-      </a>
-      <ul class="treeview-menu">
-        <li class="{{(Route::current()->getName() == 'manage.digital.all')? 'active' : ''}}"><a href="{{route('manage.digital.all')}}"><i class="fa fa-circle-o"></i>all Products</a></li>
-        <li class="{{(Route::current()->getName() == 'manage.digital.create')? 'active' : ''}}"><a href="{{route('manage.digital.create')}}"><i class="fa fa-circle-o"></i>create product</a></li>
-      </ul>
-      @endif
-    </li>
-    <!--END Digitals-->
-
-
-    <li class="treeview">
-
-      @if(in_array('csv', session()->get('privileges')->toArray()) || in_array('general', session()->get('privileges')->toArray()))
-      <a href="#">
-        <i class="fa fa-dashboard"></i> <span>Export CSV</span> <i class="fa fa-angle-left pull-right"></i>
-      </a>
-      <ul class="treeview-menu">
-        <li><a href="{{url('csv/users')}}"><i class="fa fa-circle-o"></i>Users Data</a></li>
-        <li><a href="{{url('csv/subcategories')}}"><i class="fa fa-circle-o"></i>Categories Data</a></li>
-        <li><a href="{{url('csv/products')}}"><i class="fa fa-circle-o"></i>Products Data</a></li>
-        <li><a href="{{url('csv/vendors')}}"><i class="fa fa-circle-o"></i>Vendors Data</a></li>
-      </ul>
-      @endif
-    </li>
-
-
-    {{-- <li class="treeview">
-        <a href="#">
-          <i class="fa fa-dashboard"></i> <span> الإحصائيات والتحاليل والتقارير </span> <i class="fa fa-angle-left pull-right"></i>
-        </a>
-        <ul class="treeview-menu">
-          <li><a href="index.html"><i class="fa fa-circle-o"></i>عرض إحصائيات للموقع</a></li>
-        </ul>
-      </li>
-
-      --}}
-
-     <?php /* <li><a href="{{route('manage.purchase.refund')}}"><i class="fa fa-dashboard"></i>{{__('translations.refund')}}</a></li>
-    </li> */?>
 
        @if($logged_user->can('search with bill') || $logged_user->can('Administer'))
        <li class="treeview {{(Route::current()->getName() == 'manage.search.bill') ? 'active' : '' }}">
@@ -592,13 +401,6 @@
     </li>
     @endif
 
-<?php /*
-    @if($logged_user->can('add permission') || $logged_user->can('Administer'))
-    <li class="{{(Route::current()->getName() == 'permissions.create')? 'active' : ''}}"><a href="{{route('permissions.create')}}"><i class="fa fa-plus"></i>{{__('translations.add_permissions')}}</a></li>
-    </li>
-    @endif
-*/ ?>
-
 @if($logged_user->can('view all permissions') || $logged_user->can('Administer'))
     <li class="{{(Route::current()->getName() == 'permissions.all')? 'active' : ''}}"><a href="{{route('permissions.all')}}"><i class="fa fa-plus"></i>{{__('translations.all_permissions')}}</a></li>
     </li>
@@ -621,12 +423,9 @@
     </li>
     <!--END permissions -->
 
-
-
         <li><a href="{{route('owner.logout')}}"><i class="fa fa-sign-out"></i>{{__('translations.logout')}}</a></li>
 
 
     </ul>
   </section>
-  {{-- /.sidebar --}}
 </aside>

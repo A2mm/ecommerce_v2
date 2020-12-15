@@ -20,9 +20,9 @@ class Image extends Model
       return $this->belongsTo('\App\Product');
     }
 
-    public function tapActivity(Activity $activity, string $eventName)
+    /*public function tapActivity(Activity $activity, string $eventName)
     {
       require '../../activityipget.php'; 
       $activity->ip = $ip;
-    }
+    }*/
 }

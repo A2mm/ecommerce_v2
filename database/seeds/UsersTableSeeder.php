@@ -20,9 +20,9 @@ class UsersTableSeeder extends Seeder
             0 => 
             array (
                 'id' => 3,
-                'name' => 'Mohammed Roshdy',
+                'name' => 'example',
                 'slug' => NULL,
-                'email' => 'le.roshdy@gmail.com',
+                'email' => 'example@gmail.com',
                 'password' => '$2y$10$dkWlOEd7vhQpEQFsZuhyNOx2S01/Mf4200hV0QlPXcHfqvTgWALTO',
                 'remember_token' => 'Vn3uKBPIW11PqJApQ6ZrJ6fOEVsyZGi6qHGRYQ9F26pKHH2WTVuTYfvVHcwy',
                 'api_token' => NULL,

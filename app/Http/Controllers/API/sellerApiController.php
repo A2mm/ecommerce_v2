@@ -11,7 +11,6 @@ use App\Purchase;
 use App\Seller;
 use App\Store;
 use App\User;
-use App\BarcodeMovement;
 use App\Barcode;
 use Carbon\Carbon;
 use Hash;
@@ -24,290 +23,7 @@ use App\Progress;
 
 class sellerApiController extends Controller
 {
-  public function get_in_progress(Request $request)
-  {
-       $validator = Validator::make($request->all(), [
-          'api_token'   => 'required|exists:sellers,api_token',
-        ]);
-
-         if ($validator->fails()) 
-        {
-            if (!$request->has('api_token') || $request->api_token == '') 
-            {
-                     return response()->json([
-                      'message' => $validator->errors()->first(),
-                      'dest' => 'getInProgress',
-                      'code' => 400,
-                      'auth_id' => null,
-                  ], 400);
-            }
-
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                if (!Seller::where(['api_token' => $request->api_token])->first()) 
-                {
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'getInProgress',
-                          'code' => 400,
-                          'auth_id' => null,
-                      ], 400);
-                }
-
-                if ($seller = Seller::where(['api_token' => $request->api_token])->first()) 
-                {   
-                     if ($seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'getInProgress',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ], 401);
-                    }
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'getInProgress',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-                }
-            }
-        }    // end newvalidation
-         else
-        {
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                   $seller = Seller::where(['api_token' => $request->api_token])->first();
-                    if (!$seller)
-                    {
-                            return response()->json([
-                              'message' => $validator->errors(),
-                              'dest'    => 'getInProgress',
-                              'code'    => 400,
-                              'auth_id' => null,
-                          ], 400);
-                    }
-                
-                    if ($seller && $seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'getInProgress',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ], 401);
-                    }
-            }
-        }
-        $seller   = Seller::where(['api_token' => $request->api_token])->first();
-        $store_id = $seller->store_id;
-
-        $items    = Progress::where('order_status', 'in progress')
-                            ->where('store_id', $store_id)
-                            ->where('quantity', '!=', 0)
-                            ->where('purchase_id', '!=', null)
-                            ->get();
-        $arr = array();
-       /* foreach ($items as $itemm) {
-                 if (in_array($itemm->bill_id, $arr)) 
-                  {
-                      continue;
-                  }
-                  else
-                  {
-                      array_push($arr, $history->bill_id);
-                  }
-        }*/
-            if (count($items) <= 0)    
-            {
-               /*$items    = Progress::whereIn('bill_id', $arr)
-                            ->where('order_status', 'in progress')
-                            ->where('store_id', $store_id)
-                            ->where('quantity', '!=', 0)
-                            ->where('purchase_id', '!=', null)
-                            ->get();*/
-               return response()->json([
-                      'message' => __('translations.no_orders_inprogress_from_this_store'),
-                      'dest' => 'getInProgress',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }
-            else
-            {
-                foreach ($items as $item) 
-                {
-                   $item->makeHidden(['id', 'deleted_at', 'user_id', 'store_id', 'seller_id', 'payment_method_id', 'updated_at']);
-                   $item->makeHidden('user');
-                   $item->makeHidden('user');
-                   $item->makeHidden('product');
-                   $item->makeHidden('store');
-                   $item['quantity']       = -($item->quantity); 
-                   $item['user_name']      = $item->user->name; 
-                   $item['store_name']     = $item->store->name; 
-                   $item['product_name']   = $item->product->name; 
-                   $item['bought_price']   = $item->price * $item->quantity; 
-                   $item['bill_price_without_shipment']  = $item->purchase_price - $item->shipment; 
-                }
-                return response()->json([
-                      'items' => $items->groupBy('bill_id'),
-                      'dest' => 'getInProgress',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }
-  }
-
-  public function get_in_progress2(Request $request)
-  {
-       $validator = Validator::make($request->all(), [
-          'api_token'   => 'required|exists:sellers,api_token',
-        ]);
-
-         if ($validator->fails()) 
-        {
-            if (!$request->has('api_token') || $request->api_token == '') 
-            {
-                     return response()->json([
-                      'message' => $validator->errors()->first(),
-                      'dest' => 'getInProgress',
-                      'code' => 400,
-                      'auth_id' => null,
-                  ], 400);
-            }
-
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                if (!Seller::where(['api_token' => $request->api_token])->first()) 
-                {
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'getInProgress',
-                          'code' => 400,
-                          'auth_id' => null,
-                      ], 400);
-                }
-
-                if ($seller = Seller::where(['api_token' => $request->api_token])->first()) 
-                {   
-                     if ($seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'getInProgress',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ], 401);
-                    }
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'getInProgress',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-                }
-            }
-        }    // end newvalidation
-         else
-        {
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                   $seller = Seller::where(['api_token' => $request->api_token])->first();
-                    if (!$seller)
-                    {
-                            return response()->json([
-                              'message' => $validator->errors(),
-                              'dest'    => 'getInProgress',
-                              'code'    => 400,
-                              'auth_id' => null,
-                          ], 400);
-                    }
-                
-                    if ($seller && $seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'getInProgress',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ], 401);
-                    }
-            }
-        }
-        $seller   = Seller::where(['api_token' => $request->api_token])->first();
-        $store_id = $seller->store_id;
-
-        $items    = Progress::where('order_status', 'in progress')
-                            ->where('store_id', $store_id)
-                            ->where('quantity', '!=', 0)
-                            ->where('purchase_id', '!=', null)
-                            ->get();
-        $arr = array();
-       /* foreach ($items as $itemm) {
-                 if (in_array($itemm->bill_id, $arr)) 
-                  {
-                      continue;
-                  }
-                  else
-                  {
-                      array_push($arr, $history->bill_id);
-                  }
-        }*/
-            if (count($items) <= 0)    
-            {
-               /*$items    = Progress::whereIn('bill_id', $arr)
-                            ->where('order_status', 'in progress')
-                            ->where('store_id', $store_id)
-                            ->where('quantity', '!=', 0)
-                            ->where('purchase_id', '!=', null)
-                            ->get();*/
-               return response()->json([
-                      'message' => __('translations.no_orders_inprogress_from_this_store'),
-                      'dest' => 'getInProgress',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }
-            else
-            {
-                foreach ($items as $item) 
-                {
-                   $item->makeHidden(['id', 'deleted_at', 'user_id', 'store_id', 'seller_id', 'payment_method_id', 'updated_at', 'purchase_id', 'created_at', 'use_promo', 'shipment', 'bill_id', 'purchase_price']);
-                   $item->makeHidden('user');
-                   $item->makeHidden('user');
-                   $item->makeHidden('product');
-                   $item->makeHidden('store');
-                   $item['quantity']       = -($item->quantity); 
-                  // $item['user_name']      = $item->user->name; 
-                  // $item['store_name']     = $item->store->name; 
-                   $item['product_name']   = $item->product->name; 
-                   $item['bought_price']   = $item->price * $item->quantity; 
-                  // $item['bill_price_without_shipment']  = $item->purchase_price - $item->shipment; 
-                
-                $ones = $items->groupBy('bill_id'); 
-                foreach ($ones as $oo) 
-                {                   
-                   $oo['purchase_id'] = $item->purchase_id; 
-                   $oo['shipment']    = $item->shipment; 
-                   $oo['use_promo']   = $item->use_promo; 
-                   $oo['purchase_price']   = $item->purchase_price; 
-                   $oo['bill_price_without_shipment'] = $item->purchase_price - $item->shipment;  
-                   $oo['store_name']     = $item->store->name; 
-                   $oo['user_name']      = $item->user->name; 
-                   $oo['created_at']  = $item->created_at->format('Y-m-d H:i:s'); 
-                }
-}
-                return response()->json([
-                      'items' => $ones,
-                      'dest' => 'getInProgress',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }
-  }
-
-   public function get_in_progress3(Request $request)
+  public function get_in_progress3(Request $request)
   {
        $validator = Validator::make($request->all(), [
           'api_token'   => 'required|exists:sellers,api_token',
@@ -465,397 +181,13 @@ $bill_details  = Progress::where('bill_id', $bill)
                       'auth_id' => $seller->id,
                   ], 200);
             }
-  }
-
-  public function seller_deliver_order2(Request $request)
-  {
-
-       $validator = Validator::make($request->all(), [
-          'api_token'    => 'required|exists:sellers,api_token',
-          'purchase_id'  => 'required|integer',
-          // 'product_id'   => 'required|integer|exists:products,id',
-          'product_ids'      => 'required|min:1'
-        ]);
-
-         if ($validator->fails()) 
-        {
-            if (!$request->has('api_token') || $request->api_token == '') 
-            {
-                     return response()->json([
-                      'message' => $validator->errors(),
-                      'dest' => 'sellerDeliver',
-                      'code' => 400,
-                      'auth_id' => null,
-                  ], 400);
-            }
-
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                if (!Seller::where(['api_token' => $request->api_token])->first()) 
-                {
-                        return response()->json([
-                          'message' => $validator->errors(),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => null,
-                      ], 400);
-                }
-
-                if ($seller = Seller::where(['api_token' => $request->api_token])->first()) 
-                {   
-                     if ($seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'sellerDeliver',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ]);
-                    }
-                        return response()->json([
-                          'message' => $validator->errors(),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-                }
-            }
-        }    // end newvalidation
-        else
-        {
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                   $seller = Seller::where(['api_token' => $request->api_token])->first();
-                    if (!$seller)
-                    {
-                            return response()->json([
-                              'message' => $validator->errors(),
-                              'dest'    => 'sellerDeliver',
-                              'code'    => 400,
-                              'auth_id' => null,
-                          ], 400);
-                    }
-                
-                    if ($seller && $seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'sellerDeliver',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ]);
-                    }
-            }
-        }
-        $seller   = Seller::where(['api_token' => $request->api_token])->first();
-        $store_id = $seller->store_id;
-
-        $purchase = Purchase::find($request->purchase_id);
-        if (!$purchase) {
-            return response()->json([
-                          'message' => __('translations.purchase_doesnot_exist'),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-        }
-
-      $codes = $request['product_ids'];
-      $codes = trim($codes, ' ');
-      $codes = trim($codes, '"');
-      
-      if(!is_array($codes)){
-        $codes = json_decode($codes);
-      }
-
-      // added ahmed
-      
-      if ($codes === NULL) 
-      {
-             return response()->json([
-                'message' => __('translations.empty_barcode'), 
-                'code'    => 202,
-            ], 201);
-      }
-      else
-      {
-            foreach ($codes as $key => $value)
-            {
-                 $typee = gettype($value);
-                 if ($typee === NULL)
-                 {
-                    return response()->json([
-                        'message' => __('translations.empty_barcode'), 
-                        'code'    => 203,
-                    ], 201);
-                }
-            }
-      }  
-
-        if ($purchase) 
-        {
-            $codes = array_count_values($codes);
-            foreach ($codes as $key => $value)
-            {
-              // return $key;
-                   if ($value > 1){
-                      return $key. ' ' .__('translations.can_not_be_repeated');
-                  }
-                  $existProduct = Product::where('id', $key)->first();
-                  if (!$existProduct) {
-                     return response()->json([
-                              'message' => __('translations.product_doesnot_exist').' '. $key,
-                              'dest' => 'sellerDeliver',
-                              'code' => 400,
-                              'auth_id' => $seller->id,
-                          ], 400);
-                  }
-
-                    if ($existProduct && $existProduct->archive == 1) 
-                    {
-                       return response()->json([
-                                'message' => __('translations.this_product_has_been_archived').' '. $key,
-                                'dest' => 'sellerDeliver',
-                                'code' => 400,
-                                'auth_id' => $seller->id,
-                            ], 400);
-                    }
-
-                   /*  if ($existProduct && $existProduct->available_online != 1) {
-                       return response()->json([
-                                'message' => __('translations.prod_not_available_online'),
-                                'dest' => 'sellerDeliver',
-                                'code' => 400,
-                                'auth_id' => $seller->id,
-                            ], 400);
-                    }*/
-
-              
-               $inProgress_orNot = Progress::where('order_status', 'in progress')
-                                           ->where('purchase_id', $purchase->id)
-                                           ->first();
-                    if (!$inProgress_orNot) {
-                        return response()->json([
-                                  'message' => 'Not In Progress Yet',
-                                  'dest' => 'sellerDeliver',
-                                  'code' => 400,
-                                  'auth_id' => $seller->id,
-                              ], 400);
-                    }
-
-                  if ($inProgress_orNot) 
-                  {
-                           $product_in_purchase = Progress::where('order_status', 'in progress')
-                                                 ->where('purchase_id', $purchase->id)
-                                                 ->where('product_id', $key)
-                                                 ->first();
-                          if (!$product_in_purchase) 
-                          {                
-                            $p = Product::select('name')->where('id', $key)->first();
-                              return response()->json([
-                                        'message' =>  __('translations.product_does_not_belong_to_this_purchase').' '. $p->name,
-                                        'dest' => 'sellerDeliver',
-                                        'code' => 400,
-                                        'auth_id' => $seller->id,
-                                    ], 400);
-                          }
-
-                    $store_in_purchase = Progress::where('purchase_id', $purchase->id)
-                                       ->where('product_id', $key)
-                                       ->where('store_id', $store_id)
-                                       ->first();
-                    if ($store_in_purchase && $store_in_purchase->order_status == 'delivered') 
-                    {                
-                       $p = Product::select('name')->where('id', $key)->first();
-                        return response()->json([
-                                  'message' =>  __('translations.purchase_product_delivered_from_this_store_earlier').' '. $p->name,
-                                  'dest' => 'sellerDeliver',
-                                  'code' => 400,
-                                  'auth_id' => $seller->id,
-                              ], 400);
-                    }
-
-                    if (!$store_in_purchase) 
-                    {                
-                       $p = Product::select('name')->where('id', $key)->first();
-                        return response()->json([
-                                  'message' => __('translations.product_does_not_belong_to_this_purchase').' '. $p->name,
-                                  'dest' => 'sellerDeliver',
-                                  'code' => 400,
-                                  'auth_id' => $seller->id,
-                              ], 400);
-                    }
-           }
-        } // end foreach
-      }  // end if purchase
-      foreach ($codes as $key => $value) 
-      {
-                    $item    = Progress::where('order_status', 'in progress')
-                                        ->where('store_id', $store_id)
-                                        ->where('quantity', '!=', 0)
-                                        ->where('purchase_id', '!=', null)
-                                        ->where('purchase_id', $request->purchase_id)
-                                        ->where('product_id', $key)
-                                        ->first();
-
-                     $itemHistory   = History::where('order_status', 'in progress')
-                                        ->where('store_id', null)
-                                        ->where('quantity', '>=', -$item->quantity)
-                                        ->where('purchase_id', '!=', null)
-                                        ->where('bill_id', $item->bill_id)
-                                        ->where('purchase_id', $item->purchase_id)
-                                        ->where('product_id', $item->product_id)
-                                        ->first();
-
-                    $itemQuantity   = ProductStoreQuantity::where('custom_status', 'in progress')
-                                        ->where('store_id', $store_id)
-                                       // ->where('quantity', '==', $item->quantity)
-                                        ->where('purchase_id', '!=', null)
-                                        //->where('bill_id', $item->bill_id)
-                                        ->where('purchase_id', $item->purchase_id)
-                                        ->where('product_id', $item->product_id)
-                                                  ->first();
-                       if (!$itemHistory) 
-                      {
-                         return response()->json([
-                                'message' => __('translations.can not deliver order'),
-                                'dest' => 'sellerDeliver',
-                                'code' => 200,
-                                'auth_id' => $seller->id,
-                            ], 200);
-                      }      
-
-                      if (!$itemQuantity) 
-                      {
-                         return response()->json([
-                                'message' => __('translations.can not deliver order'),
-                                'dest' => 'sellerDeliver',
-                                'code' => 200,
-                                'auth_id' => $seller->id,
-                            ], 200);
-                      }      
-
-                    if ($item && $itemHistory && $itemQuantity) 
-                    {
-                        if (-$item->quantity < $itemHistory->quantity) 
-                        {
-                            $former_quantity = $itemHistory->quantity;
-                               $itemHistory->update([
-                                'quantity' => $itemHistory->quantity + $item->quantity,
-                                'price' =>  doubleval($item->price) * ($itemHistory->quantity + $item->quantity),
-                              //  'seller_id'    => $seller->id,
-                              //  'store_id'     => $store_id,
-                               ]);
-
-                               $history = History::create([
-                                    'user_id' => $item->user_id,
-                                    'product_id' => $item->product_id,
-                                    'purchase_id' => $item->purchase_id,
-                                    'price' => doubleval($item->price) * -$item->quantity,
-                                    'order_status' => 'delivered',
-                                    'quantity' => -$item->quantity,
-                                    'bill_id' => $item->bill_id,
-                                    'order_id' => $itemHistory->order_id,
-                                    'store_id' => $seller->store_id,
-                                    'seller_id' => $seller->id,
-                                    'original' => -$item->quantity,
-                                ]);
-
-
-                               $item->update([
-                                'order_status' => 'delivered',
-                                'seller_id' => $seller->id,
-                            ]);
-
-                                $itemQuantity->update([
-                                'custom_status' => 'delivered',
-                                'seller_id' => $seller->id,
-                            ]);
-
-                        $purchase_original = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'in progress')
-                                                     ->count();
-
-                         $purchase_delivered = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'delivered')
-                                                     ->count();
-                         
-                          if ($purchase_original <= 0) {
-                            $purchase->update(['purchase_status' => 'total delivered']);
-                          }
-
-                           if ($purchase_original > 0 && $purchase_delivered > 0) {
-                            $purchase->update(['purchase_status' => 'partially delivered']);
-                          }
-                               /* return response()->json([
-                                      'message' => __('translations.purchase_delivered_partially'),
-                                      'dest' => 'getInProgress',
-                                      'code' => 200,
-                                      'auth_id' => $seller->id,
-                                  ], 200);*/
-                        }
-
-                         if (-$item->quantity  == $itemHistory->quantity) 
-                        {
-                       
-                               $itemHistory->update([
-                                'order_status' => 'delivered',
-                                'seller_id'    => $seller->id,
-                                'store_id'     => $store_id,
-                               ]);
-
-                               $item->update([
-                                'order_status' => 'delivered',
-                                'seller_id'    => $seller->id,
-                            ]);
-
-                                $itemQuantity->update([
-                                'custom_status' => 'delivered',
-                                'seller_id' => $seller->id,
-                            ]);
-
-
-                        $purchase_original = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'in progress')
-                                                     ->count();
-
-                         $purchase_delivered = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'delivered')
-                                                     ->count();
-                         
-                          if ($purchase_original <= 0) {
-                            $purchase->update(['purchase_status' => 'total delivered']);
-                          }
-
-                           if ($purchase_original > 0 && $purchase_delivered > 0) {
-                            $purchase->update(['purchase_status' => 'partially delivered']);
-                          }
-                              /* return response()->json([
-                                      'message' => __('translations.purchase_delivered_completely'),
-                                      'dest' => 'getInProgress',
-                                      'code' => 200,
-                                      'auth_id' => $seller->id,
-                                  ], 200);*/
-                        }
-                    }    
-              } // end foreach prods
-
-              return response()->json([
-                                      'message' => __('translations.purchase_delivered'),
-                                      // 'message' => __('translations.purchase_delivered'),
-                                      'dest' => 'sellerDeliver',
-                                      'code' => 200,
-                                      'auth_id' => $seller->id,
-                                  ], 200);
-  }
+  }  
 
   public function seller_deliver_order3(Request $request)
   {
        $validator = Validator::make($request->all(), [
           'api_token'    => 'required|exists:sellers,api_token',
           'purchase_id'  => 'required|integer',
-          // 'product_id'   => 'required|integer|exists:products,id',
-         // 'product_ids'      => 'required|min:1'
         ]);
 
          if ($validator->fails()) 
@@ -1224,12 +556,6 @@ if ($purchase->purchase_status == 'total delivered') {
                            if ($purchase_original > 0 && $purchase_delivered > 0) {
                             $purchase->update(['purchase_status' => 'partially delivered']);
                           }
-                              /* return response()->json([
-                                      'message' => __('translations.purchase_delivered_completely'),
-                                      'dest' => 'getInProgress',
-                                      'code' => 200,
-                                      'auth_id' => $seller->id,
-                                  ], 200);*/
                         }
                     }    
               } // end foreach prods
@@ -1246,304 +572,6 @@ if ($purchase->purchase_status == 'total delivered') {
                                   ], 200);
   }
 
-
-  public function seller_deliver_order(Request $request)
-  {
-
-       $validator = Validator::make($request->all(), [
-          'api_token'    => 'required|exists:sellers,api_token',
-          'purchase_id'  => 'required|integer',
-          'product_id'   => 'required|integer|exists:products,id',
-        ]);
-
-         if ($validator->fails()) 
-        {
-            if (!$request->has('api_token') || $request->api_token == '') 
-            {
-                     return response()->json([
-                      'message' => $validator->errors()->first(),
-                      'dest' => 'sellerDeliver',
-                      'code' => 400,
-                      'auth_id' => null,
-                  ], 400);
-            }
-
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                if (!Seller::where(['api_token' => $request->api_token])->first()) 
-                {
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => null,
-                      ], 400);
-                }
-
-                if ($seller = Seller::where(['api_token' => $request->api_token])->first()) 
-                {   
-                     if ($seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'sellerDeliver',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ]);
-                    }
-                        return response()->json([
-                          'message' => $validator->errors()->first(),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-                }
-            }
-        }    // end newvalidation
-         else
-        {
-            if ($request->has('api_token') && $request->api_token != '') 
-            {
-                   $seller = Seller::where(['api_token' => $request->api_token])->first();
-                    if (!$seller)
-                    {
-                            return response()->json([
-                              'message' => $validator->errors(),
-                              'dest'    => 'sellerDeliver',
-                              'code'    => 400,
-                              'auth_id' => null,
-                          ], 400);
-                    }
-                
-                    if ($seller && $seller->suspend == 1) 
-                    {
-                        return response()->json([
-                            'message' => __('translations.banned_seller'),
-                            'dest' => 'sellerDeliver',
-                            'code' => 401,
-                            'auth_id' => $seller->id,
-                        ]);
-                    }
-            }
-        }
-        $seller   = Seller::where(['api_token' => $request->api_token])->first();
-        $store_id = $seller->store_id;
-
-        $purchase = Purchase::find($request->purchase_id);
-        if (!$purchase) {
-            return response()->json([
-                          'message' => __('translations.purchase_doesnot_exist'),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-        }
-        if ($purchase) {
-           $inProgress_orNot = Progress::where('order_status', 'in progress')
-                                       ->where('purchase_id', $purchase->id)
-                                       ->first();
-            if (!$inProgress_orNot) {
-                return response()->json([
-                          'message' =>  __('translations.Not_In_Progress_Yet'),
-                          'dest' => 'sellerDeliver',
-                          'code' => 400,
-                          'auth_id' => $seller->id,
-                      ], 400);
-            }
-
-             if ($inProgress_orNot) 
-             {
-                 $product_in_purchase = Progress::where('order_status', 'in progress')
-                                       ->where('purchase_id', $purchase->id)
-                                       ->where('product_id', $request->product_id)
-                                       ->first();
-                if (!$product_in_purchase) 
-                {                
-                    return response()->json([
-                              'message' => __('translations.product_does_not_belong_to_this_purchase'),
-                              'dest' => 'sellerDeliver',
-                              'code' => 400,
-                              'auth_id' => $seller->id,
-                          ], 400);
-                }
-
-                 $store_in_purchase = Progress::where('purchase_id', $purchase->id)
-                                       ->where('product_id', $request->product_id)
-                                       ->where('store_id', $store_id)
-                                       ->first();
-                if ($store_in_purchase && $store_in_purchase->order_status == 'delivered') 
-                {                
-                    return response()->json([
-                              'message' => __('translations.purchase_product_delivered_from_this_store_earlier'),
-                              'dest' => 'sellerDeliver',
-                              'code' => 400,
-                              'auth_id' => $seller->id,
-                          ], 400);
-                }
-
-                if (!$store_in_purchase) 
-                {                
-                    return response()->json([
-                              'message' => __('translations.purchase_product_does_not_belong_to_this_store'),
-                              'dest' => 'sellerDeliver',
-                              'code' => 400,
-                              'auth_id' => $seller->id,
-                          ], 400);
-                }
-            }
-        }
-
-        $item    = Progress::where('order_status', 'in progress')
-                            ->where('store_id', $store_id)
-                            ->where('quantity', '!=', 0)
-                            ->where('purchase_id', '!=', null)
-                            ->where('purchase_id', $request->purchase_id)
-                            ->where('product_id', $request->product_id)
-                            ->first();
-
-         $itemHistory   = History::where('order_status', 'in progress')
-                            ->where('store_id', null)
-                            ->where('quantity', '>=', -$item->quantity)
-                            ->where('purchase_id', '!=', null)
-                            ->where('bill_id', $item->bill_id)
-                            ->where('purchase_id', $item->purchase_id)
-                            ->where('product_id', $item->product_id)
-                            ->first();
-
-        $itemQuantity   = ProductStoreQuantity::where('custom_status', 'in progress')
-                            ->where('store_id', $store_id)
-                           // ->where('quantity', '==', $item->quantity)
-                            ->where('purchase_id', '!=', null)
-                            //->where('bill_id', $item->bill_id)
-                            ->where('purchase_id', $item->purchase_id)
-                            ->where('product_id', $item->product_id)
-                            ->first();
-             if (!$itemHistory) 
-            {
-               return response()->json([
-                      'message' => __('translations.can_not_deliver_order'),
-                      'dest' => 'sellerDeliver',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }      
-
-            if (!$itemQuantity) 
-            {
-               return response()->json([
-                      'message' => __('translations.can_not_deliver_order'),
-                      'dest' => 'sellerDeliver',
-                      'code' => 200,
-                      'auth_id' => $seller->id,
-                  ], 200);
-            }      
-
-            if ($item && $itemHistory && $itemQuantity) 
-            {
-                if (-$item->quantity < $itemHistory->quantity) 
-                {
-                    $former_quantity = $itemHistory->quantity;
-                       $itemHistory->update([
-                        'quantity' => $itemHistory->quantity + $item->quantity,
-                        'price' =>  doubleval($item->price) * ($itemHistory->quantity + $item->quantity),
-                      //  'seller_id'    => $seller->id,
-                      //  'store_id'     => $store_id,
-                       ]);
-
-                       $history = History::create([
-                            'user_id' => $item->user_id,
-                            'product_id' => $item->product_id,
-                            'purchase_id' => $item->purchase_id,
-                            'price' => doubleval($item->price) * -$item->quantity,
-                            'order_status' => 'delivered',
-                            'quantity' => -$item->quantity,
-                            'bill_id' => $item->bill_id,
-                            'order_id' => $itemHistory->order_id,
-                            'store_id' => $seller->store_id,
-                            'seller_id' => $seller->id,
-                            'original' => -$item->quantity,
-                        ]);
-
-
-                       $item->update([
-                        'order_status' => 'delivered',
-                        'seller_id' => $seller->id,
-                    ]);
-
-                        $itemQuantity->update([
-                        'custom_status' => 'delivered',
-                        'seller_id' => $seller->id,
-                    ]);
-
-                 $purchase_original = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'in progress')
-                                                     ->count();
-
-                         $purchase_delivered = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'delivered')
-                                                     ->count();
-                         
-                          if ($purchase_original <= 0) {
-                            $purchase->update(['purchase_status' => 'total delivered']);
-                          }
-
-                           if ($purchase_original > 0 && $purchase_delivered > 0) {
-                            $purchase->update(['purchase_status' => 'partially delivered']);
-                          }
-                       return response()->json([
-                              'message' => __('translations.purchase_delivered_partially'),
-                              'dest' => 'sellerDeliver',
-                              'code' => 200,
-                              'auth_id' => $seller->id,
-                          ], 200);
-                }
-
-                 if (-$item->quantity  == $itemHistory->quantity) 
-                {
-               
-                       $itemHistory->update([
-                        'order_status' => 'delivered',
-                        'seller_id'    => $seller->id,
-                        'store_id'     => $store_id,
-                       ]);
-
-                       $item->update([
-                        'order_status' => 'delivered',
-                        'seller_id'    => $seller->id,
-                    ]);
-
-                        $itemQuantity->update([
-                        'custom_status' => 'delivered',
-                        'seller_id' => $seller->id,
-                    ]);
-
-
-                 $purchase_original = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'in progress')
-                                                     ->count();
-
-                         $purchase_delivered = History::where('purchase_id', $purchase->id)
-                                                     ->where('order_status', 'delivered')
-                                                     ->count();
-                         
-                          if ($purchase_original <= 0) {
-                            $purchase->update(['purchase_status' => 'total delivered']);
-                          }
-
-                           if ($purchase_original > 0 && $purchase_delivered > 0) {
-                            $purchase->update(['purchase_status' => 'partially delivered']);
-                          }
-
-                       return response()->json([
-                              'message' => __('translations.purchase_delivered_completely'),
-                              'dest' => 'sellerDeliver',
-                              'code' => 200,
-                              'auth_id' => $seller->id,
-                          ], 200);
-                }
-            }           
-  }
-
     public function customer_register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -1551,7 +579,6 @@ if ($purchase->purchase_status == 'total delivered') {
             'phone'       => 'required|size:11|regex:/(01)[0-9]{9}/',
             'usertype_id' => 'required|exists:usertypes,id',
             'api_token'   => 'required',
-
         ]);
 
         $seller = Seller::where(['api_token' => $request->api_token])->first();
@@ -1762,22 +789,7 @@ if ($purchase->purchase_status == 'total delivered') {
         if(!is_array($codes)){
           $codes = json_decode($codes);
         }
-        // return var_dump($codes);
-       /* $nums = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
-        if ($request->has('phone') && $request->phone != '') 
-        {
-            for($i= 0; $i<strlen($request->phone); $i++) {
-                if (!in_array($request->phone[$i], $nums)) {
-                    return response()->json([
-                        //'phon' => $request->phone[$i]]);
-                    'message' => __('translations.client_not_found'),
-                    'dest' => 'productsPhone',
-                    'auth_id' => $seller->id,
-                    'code' => 400,
-                    ], 400);
-                }
-            }
-        }*/
+      
         if ($request->has('phone') && $request->phone != '') 
         {
            $user = User::where('phone', $request->phone)->withTrashed()->first();
@@ -1943,10 +955,6 @@ if ($purchase->purchase_status == 'total delivered') {
             {
                 array_push($seller_products, $store->product_id);
             }
-          /*  $product = Product::where('id', $store->product_id)->first();
-            if ($product->quantity > 0){
-                array_push($seller_products, $product->id);
-            }*/
         }
         $products = Product::whereIn('id', $seller_products)->get();
         foreach ($products as $product) 
@@ -2044,16 +1052,8 @@ if ($purchase->purchase_status == 'total delivered') {
                     'code' => 200,
                     'auth_id' => $seller->id,
                 ]);
-            // }
-            // else
-            // {
-            //   $product_['product_store_quantities'] = __('translations.no_quantity_available_in_stores'); 
-            //            return response()->json([
-            //         'product' => $product_,
-            //         'code' => 200,
-            //     ]);  
-            // }
     }
+
     public function putProduct(Request $request)
     {
       $validator = Validator::make($request->all(), [
@@ -2720,127 +1720,6 @@ if ($purchase->purchase_status == 'total delivered') {
         ]);
     }
 
-    public function scan_bill(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'bill_id'      => 'required|numeric',
-            'api_token'    => 'required',
-        ]);
-
-        $seller = Seller::where([
-            'api_token' => $request->api_token,
-            'suspend' => 0,
-        ])->first();
-
-        if ($validator->fails()) 
-        {
-             return response()->json([
-                'message' => $validator->errors()->first(),
-                'dest' => 'scan_bill',
-                'auth_id' => $seller->id,
-                'code' => 400,
-            ], 400);
-        }
-
-        $bill_id  =  $request->bill_id;
-        $purchase = Purchase::where('bill_id', $bill_id)->first();
-
-        if (empty($purchase)) 
-        {
-            return response()->json([
-                'message' => __('translations.make_sure_about_bill_id'),
-                'dest' => 'scan_bill',
-                'auth_id' => $seller->id,
-                'code' => 404,
-            ], 404);
-        }
-
-        //$bill_products = History::where('bill_id', $bill_id)->where('quantity', '!=', 0)->get();
-        $quantity = History::where('bill_id', $bill_id)
-                                ->sum('quantity');
-        if ($quantity <= 0) 
-        {
-            return response()->json([
-                'code' => 400, 
-                'dest' => 'scan_bill',
-                'auth_id' => $seller->id,
-                'message' => __('translations.you_refunded_bill')], 400);
-        }
-       
-            $bill_products = History::where('bill_id', $bill_id)
-                                  ->where('order_status' , '!=', 'in progress')
-                                  ->where('order_status' , '!=', 'pending')
-                                  ->where('order_status' , '!=', 'canceled')
-                                  ->select( 'id', 'user_id','product_id', 'order_status', 'quantity', 'refunded', 'price', 'bill_id', 'sellerdiscount')
-                                  ->get();
-
-           
-        $details = [];
-        foreach($bill_products as $item)
-        {
-           // return $item;
-            $product  = Product::where('id', $item->product_id)->first();
-            $quantity = History::where('bill_id', $bill_id)
-                               ->where('product_id', $item->product_id)
-                               //->where('quantity', '>', 0)
-                              // ->groupBy('product_id')
-                               ->sum('quantity');
-
-           $price = History::where('bill_id', $bill_id)
-                               ->where('product_id', $item->product_id)
-                               //->where('quantity', '>', 0)
-                              // ->groupBy('product_id')
-                               ->sum('price');
-                
-                $exist_quantity = $item->quantity - $item->refunded;
-                if($exist_quantity <= 0)
-                {
-                    continue;    
-                }
-                else
-                {
-                    if (!empty($item->refunded)) {
-                        $num = $item->quantity - $item->refunded;
-                            $status = __('translations.partially_refunded');
-                    }
-                    else{
-                        $status = $item->order_status;
-                        if ($status == 'pending' || $status == 'in progress') 
-                        {
-                           $status = __('translations.bill_processed');
-                        }
-                        elseif($status == 'delivered') 
-                        {
-                            $status = __('translations.delivered');
-                        }
-                        else
-                        {
-                            $status = $item->order_status;
-                        }
-                    }
-                   array_push($details,[
-                    'id'                 => $item->id,
-                    'user_id'            => $item->user_id,
-                    'product_id'         => $item->product_id,
-                    'product_name'       => $product->name,
-                    'product_unique_id'  => $product->unique_id,
-                    'order_status'       => $status,
-                    'quantity'           => $quantity,
-                    'price'              => $price,
-                    'refunded'           => $item->refunded,
-                    'bill_id'            => $item->bill_id,
-                    ]);
-                }
-        }
-        return response()->json([
-            'bill_products' => $details,
-            'dest' => 'scan_bill',
-            'auth_id' => $seller->id,
-            'code' => 200
-        ], 200);
-    
-    }
-
      public function scan_bill2(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -3169,7 +2048,6 @@ if ($purchase->purchase_status == 'total delivered') {
                 'reason'     => __('translations.partially_refunded'),
               ]);
                
-                    //$piece_price = explode(' ', $product->getSellerPriceType($quantity, $user->usertype_id)); 
 
                   $gotten = History::where(['product_id' => $product->id, 'bill_id' => $request->bill_id])
                                    ->where('seller_id', '>', 0)
@@ -3199,46 +2077,7 @@ if ($purchase->purchase_status == 'total delivered') {
                 {
                     $user_id = 0;
                 }               
-/*
-                $ordered_item = DB::table('orders')->where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->limit(1)->get();
 
-                        $ordered_itemm = DB::table('orders')->where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->limit(1);
-                        
-                        if (empty($ordered_item[0]->refunded)) 
-                        {
-                            $already_refunded = 0;
-                        }
-                        else
-                        {
-                            $already_refunded = $ordered_item[0]->refunded;
-                        }
-
-                       $ordered_itemm->update([
-                            'refunded'  => $already_refunded + $quantity,
-                        ]);
-                       //$ordered_itemm->save();
-
-                       $refunded_item = History::where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->first();
-                        if (empty($refunded_item->refunded)) 
-                        {
-                            $exist_refunded = 0;
-                        }
-                        else
-                        {
-                            $exist_refunded = $refunded_item->refunded;
-                        }
-
-                        $refunded_item->update([
-                            'refunded'     => $exist_refunded + $quantity,
-                        ]);
-                        //$refunded_item->save();
-                        if (!empty($item->sellerdiscount)) 
-                        {
-                            $disc = $item->sellerdiscount;
-                        }
-                        else{
-                            $disc = 0;
-                        }*/
                         $new_order = Order::create([
 
                             'user_id' => $user_id,                    
@@ -3246,7 +2085,6 @@ if ($purchase->purchase_status == 'total delivered') {
                             'quantity' => -$quantity,
                             'bill_id' => $request->bill_id,
                             'refunded' => -$quantity,
-                            // 'price'     => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'purchase_id' => $newpurchase->id,
                             'store_id' => $seller->store_id,
@@ -3257,7 +2095,6 @@ if ($purchase->purchase_status == 'total delivered') {
                             'user_id' => $user_id,
                             'product_id' => $product->id,
                             'purchase_id' => $newpurchase->id,
-                           // 'price' => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'order_status' => __('translations.partially_refunded'),
                             'refunded' => -$quantity,
@@ -3271,11 +2108,9 @@ if ($purchase->purchase_status == 'total delivered') {
                          array_push($histories_ids, $history->id);
 
                         $newpurchase->update([
-                            // 'price' => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'purchase_status'    => __('translations.partially_refunded'),
                             'user_id'    => $user_id,
-                            //'method'             => __('translations.cash_in_the_store'),
                         ]);
                        $newpurchase->save();
                     
@@ -3284,7 +2119,6 @@ if ($purchase->purchase_status == 'total delivered') {
                     {
                         $user = User::where('id', $item->user_id)->first();
                         $user->update([
-                   // 'points' => $user->points - ($piece_price[0] -($piece_price[0] * $disc / 100)),
                     'points' => $user->points - ($bought_price * $quantity),
                         ]);
                         $user->save();
@@ -3329,55 +2163,13 @@ if ($purchase->purchase_status == 'total delivered') {
                 $newpurchase->seller_id  = $seller->id;
                 $newpurchase->bill_id = $request->bill_id;
                 $newpurchase->save();
-/*
-                $ordered_item = DB::table('orders')->where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->limit(1)->get();
 
-                        $ordered_itemm = DB::table('orders')->where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->limit(1);
-                        
-                        if (empty($ordered_item[0]->refunded)) 
-                        {
-                            $already_refunded = 0;
-                        }
-                        else
-                        {
-                            $already_refunded = $ordered_item[0]->refunded;
-                        }
-
-                       $ordered_itemm->update([
-                            'refunded'  => $already_refunded + $quantity,
-                        ]);
-                       //$ordered_itemm->save();
-
-                       $refunded_item = History::where(['bill_id' => $request->bill_id, 'product_id' => $product->id])->first();
-                        if (empty($refunded_item->refunded)) 
-                        {
-                            $exist_refunded = 0;
-                        }
-                        else
-                        {
-                            $exist_refunded = $refunded_item->refunded;
-                        }
-
-                        $refunded_item->update([
-                            'refunded'     => $exist_refunded + $quantity,
-                        ]);
-                       // $refunded_item->save();
-
-                        if (!empty($item->sellerdiscount)) 
-                        {
-                            $disc = $item->sellerdiscount;
-                        }
-                        else{
-                            $disc = 0;
-                        }
-*/
                         $new_order = Order::create([
                             'user_id' => $user_id,                    
                             'product_id' => $product->id,
                             'quantity' => -$quantity,
                             'bill_id' => $request->bill_id,
                             'refunded' => -$quantity,
-                           // 'price'     => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'purchase_id' => $newpurchase->id,
                             'store_id' => $seller->store_id,
@@ -3388,7 +2180,6 @@ if ($purchase->purchase_status == 'total delivered') {
                             'user_id' => $user_id,
                             'product_id' => $product->id,
                             'purchase_id' => $newpurchase->id,
-                          //  'price' => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'order_status' => __('translations.hole_refunded'),
                             'refunded' => -$quantity,
@@ -3401,7 +2192,6 @@ if ($purchase->purchase_status == 'total delivered') {
 
                         array_push($histories_ids, $history->id);
                         $newpurchase->update([
-                           // 'price' => -($piece_price[0] -($piece_price[0] * $disc / 100)),
                             'price'     => -$bought_price * $quantity,
                             'purchase_status'    => __('translations.hole_refunded'),
                             //'method'             => __('translations.cash_in_the_store'),
@@ -3413,7 +2203,6 @@ if ($purchase->purchase_status == 'total delivered') {
             {
                 $user = User::where('id', $item->user_id)->first();
                 $user->update([
-                 // 'points' => $user->points - ($piece_price[0] -($piece_price[0] * $disc / 100)),
                   'points' => $user->points - ($bought_price * $quantity),
                 ]);
                 $user->save();
@@ -3436,7 +2225,6 @@ if ($purchase->purchase_status == 'total delivered') {
   {
      $validator = Validator::make($request->all(), [
             'api_token'    => 'required',
-            //'store_id'      => 'required|integer',
         ]);
 
       $seller = Seller::where(['api_token' => $request->api_token])->first();
@@ -3472,7 +2260,6 @@ if ($purchase->purchase_status == 'total delivered') {
             }
         }
 
-        //$store_id   = $request->store_id;
         $from = Carbon::today()->subDays(7)->toDateString();
         $from = $from.' 00:00:00';
         $to   = Carbon::today()->toDateString();
@@ -3486,11 +2273,7 @@ if ($purchase->purchase_status == 'total delivered') {
                              ->where('created_at', '<=', $to)
                              ->orderBy('created_at', 'desc')
                              ->select('price', 'created_at')
-                             //->groupBy('created_at');
-                             //->sum('price');
                              ->get();
-        //$ones = $days_solds->groupBy('product_id');
-                             //return $days_solds;
         $arr   = array();
         $arr_2 = array();
        foreach($days_solds as $day)
@@ -3570,7 +2353,6 @@ if ($purchase->purchase_status == 'total delivered') {
                 $store_id = $seller->store_id;
             }
         }
-      //  $store_id   = $request->store_id;
         
         $day  = Carbon::now()->format( 'l' );
         //return $day;
@@ -3587,7 +2369,6 @@ if ($purchase->purchase_status == 'total delivered') {
         {
             $tod = $week[$day];
         }
-        //return $day;
 
         $from = Carbon::today()->subDays($tod-1)->toDateString();
         $to   = Carbon::today()->toDateString();
@@ -3602,7 +2383,6 @@ if ($purchase->purchase_status == 'total delivered') {
                              ->where('created_at', '>=', $from)
                              ->where('created_at', '<=', $to)
                              ->orderBy('created_at', 'DESC')
-                             //->get();
                              ->sum('price');
 
         return response()->json([
@@ -3615,7 +2395,6 @@ if ($purchase->purchase_status == 'total delivered') {
 
   public function store_last_10_days(Request $request)
   {
-    // return $request->api_token;
     $validator = Validator::make($request->all(), [
             'api_token'    => 'required',
         ]);
@@ -3678,8 +2457,6 @@ if ($purchase->purchase_status == 'total delivered') {
                                           ->orderBy('created_at', 'desc')
                                           ->get(); 
 
-        // return $days_solds;   
-
         if (count($days_solds) <= 0) {
             return response()->json([
                 'code' => 200,
@@ -3707,7 +2484,5 @@ if ($purchase->purchase_status == 'total delivered') {
         'code'    => 200,
     ], 200);
   }
-
-
 }
 
